@@ -22,16 +22,15 @@ const Login = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
-  
+
     try {
       const res = await api.post("/auth/login", { email, password });
-  
-      const userData = res.data.data; 
-  
+
+      const userData = res.data.data;
       localStorage.setItem("token", userData.token);
-      localStorage.setItem("user", JSON.stringify(userData)); 
-  
-      navigate("/dashboard", { replace: true });
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      navigate("/", { replace: true });
     } catch (err) {
       setError(
         err.response?.data?.message || "Login failed. Please try again."
@@ -52,7 +51,9 @@ const Login = () => {
       <div className="z-10 relative space-y-8 bg-white shadow-lg p-10 border border-gray-100 rounded-2xl w-full max-w-md">
         {/* Logo / Brand */}
         <div className="text-center">
-          <h2 className="mt-2 font-bold text-gray-900 text-3xl">Welcome Back</h2>
+          <h2 className="mt-2 font-bold text-gray-900 text-3xl">
+            Welcome Back
+          </h2>
           <p className="mt-2 text-gray-600 text-sm">
             Sign in to your HR dashboard
           </p>

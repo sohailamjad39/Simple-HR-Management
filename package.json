@@ -20,6 +20,7 @@
   "homepage": "https://github.com/sohailamjad39/Simple-HR-Management#readme",
   "description": "",
   "dependencies": {
-    "concurrently": "^9.2.0"
+    "concurrently": "^9.2.0",
+    "express-async-handler": "^1.2.0"
   }
 }

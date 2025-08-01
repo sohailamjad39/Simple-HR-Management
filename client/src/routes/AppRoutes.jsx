@@ -1,13 +1,13 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import PageNotFound from "../pages/PageNotFound";
-import Page from "../pages/Page";
 import Dashboard from "../pages/Dashboard";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import ProtectedRoute from "../components/ProtectedRoute";
 import GuestRoute from "../components/GuestRoute";
 import Logout from "../pages/Logout";
+import AddEmployee from "../pages/AddEmployee";
 
 function AppRoutes() {
   return (
@@ -28,6 +28,15 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      // client/src/routes/AppRoutes.jsx
+      <Route
+        path="/employees/add"
+        element={
+          <ProtectedRoute>
+            <AddEmployee />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/login"
         element={
@@ -44,7 +53,6 @@ function AppRoutes() {
           </GuestRoute>
         }
       />
-      <Route path="/page" element={<Page />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

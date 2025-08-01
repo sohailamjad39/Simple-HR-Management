@@ -15,6 +15,9 @@ app.use(cors());
 app.use(express.json());
 
 import authRoutes from "./routes/authRoutes.js";
+import employeeRoutes from "./routes/employeeRoutes.js";
+import leaveRoutes from "./routes/leaveRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 // Sample Route
 app.get("/sample", (req, res) => {
@@ -23,6 +26,9 @@ app.get("/sample", (req, res) => {
 
 // Register your routes here — clean and simple
 app.use("/api/auth", authRoutes);
+app.use("/api/employees", employeeRoutes);
+app.use("/api/leaves", leaveRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // Start Server Only After Successful DB Connection
 const startServer = async () => {
