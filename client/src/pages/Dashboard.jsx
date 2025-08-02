@@ -4,21 +4,15 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 // Components
+import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import OverviewCard from "../components/Dashboard/OverviewCard";
 import QuickAction from "../components/Dashboard/QuickAction";
 import DashboardLayout from "../components/Dashboard/DashboardLayout";
-import Navbar from "../components/Navbar";
 
-// Icons (same as before)
+// Icons
 const UsersIcon = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-6 h-6"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -29,13 +23,7 @@ const UsersIcon = (
 );
 
 const ClockIcon = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-6 h-6"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -46,13 +34,7 @@ const ClockIcon = (
 );
 
 const BriefcaseIcon = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-6 h-6"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -63,13 +45,7 @@ const BriefcaseIcon = (
 );
 
 const AddIcon = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-5 h-5"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -80,13 +56,7 @@ const AddIcon = (
 );
 
 const CalendarIcon = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-5 h-5"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -97,13 +67,7 @@ const CalendarIcon = (
 );
 
 const DocumentIcon = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-5 h-5"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -129,10 +93,14 @@ const Dashboard = () => {
     const fetchStats = async () => {
       try {
         const res = await api.get("/dashboard/stats");
-        setStats(res.data.data);
+        // ✅ Ensure data shape is correct
+        if (res.data.success && res.data.data) {
+          setStats(res.data.data);
+        } else {
+          console.error("Invalid dashboard data", res.data);
+        }
       } catch (err) {
         console.error("Failed to load dashboard data", err);
-        // Optionally redirect to login if 401
         if (err.response?.status === 401) {
           navigate("/login", { replace: true });
         }
@@ -180,13 +148,7 @@ const Dashboard = () => {
             <OverviewCard
               title="Total Employees"
               value={stats.totalEmployees}
-              subtitle={`${
-                stats.activeInactive.active - stats.activeInactive.inactive > 0
-                  ? "+"
-                  : ""
-              }${
-                stats.activeInactive.active - stats.activeInactive.inactive
-              } new this month`}
+              subtitle="+5 new this month"
               icon={UsersIcon}
             />
             <OverviewCard
@@ -212,15 +174,10 @@ const Dashboard = () => {
           {/* Recent Activity + Quick Actions */}
           <div className="gap-6 grid grid-cols-1 lg:grid-cols-2 mt-8">
             <div className="bg-white/70 shadow-sm backdrop-blur-sm p-6 border border-gray-100 rounded-2xl">
-              <h3 className="mb-4 font-semibold text-gray-900 text-lg">
-                Recent Activity
-              </h3>
+              <h3 className="mb-4 font-semibold text-gray-900 text-lg">Recent Activity</h3>
               <div className="space-y-4">
                 {stats.recentActivity.map((act, i) => (
-                  <div
-                    key={i}
-                    className="flex justify-between items-center text-gray-700 text-sm"
-                  >
+                  <div key={i} className="flex justify-between items-center text-gray-700 text-sm">
                     <div>
                       <p>{act.action}</p>
                       <p className="text-gray-500">{act.user}</p>
@@ -232,9 +189,7 @@ const Dashboard = () => {
             </div>
 
             <div className="bg-white/70 shadow-sm backdrop-blur-sm p-6 border border-gray-100 rounded-2xl">
-              <h3 className="mb-4 font-semibold text-gray-900 text-lg">
-                Quick Actions
-              </h3>
+              <h3 className="mb-4 font-semibold text-gray-900 text-lg">Quick Actions</h3>
               <div className="space-y-3">
                 {quickActions.map((action, i) => (
                   <QuickAction

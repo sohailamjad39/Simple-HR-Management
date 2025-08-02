@@ -1,18 +1,20 @@
 // server/controllers/dashboardController.js
 import asyncHandler from "express-async-handler";
 import Employee from "../models/Employee.js";
-import LeaveRequest from "../models/LeaveRequest.js";
 import JobOpening from "../models/JobOpening.js";
+import Leave from "../models/Leave.js";
 
-// @desc    Get dashboard stats
-// @route   GET /api/dashboard/stats
-// @access  Private
+/**
+ * @desc    Get dashboard stats
+ * @route   GET /api/dashboard/stats
+ * @access  Private
+ */
 export const getDashboardStats = asyncHandler(async (req, res) => {
   const totalEmployees = await Employee.countDocuments();
   const activeEmployees = await Employee.countDocuments({ status: "Active" });
   const inactiveEmployees = totalEmployees - activeEmployees;
 
-  const upcomingLeaves = await LeaveRequest.countDocuments({
+  const upcomingLeaves = await Leave.countDocuments({
     status: "Approved",
     startDate: { $gte: new Date() },
   });
@@ -21,10 +23,10 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
 
   const urgentVacancies = await JobOpening.countDocuments({
     status: "Open",
-    priority: "Urgent", // Optional: add priority field later
+    priority: "Urgent",
   });
 
-  // Mock recent activity (you can replace with real logs later)
+  // Mock recent activity
   const recentActivity = [
     {
       action: "New employee added",

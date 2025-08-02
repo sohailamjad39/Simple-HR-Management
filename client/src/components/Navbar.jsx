@@ -80,7 +80,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className="top-3 left-1/2 z-50 fixed bg-black/5 hover:bg-black/8 shadow-lg hover:shadow-xl backdrop-blur-xl hover:backdrop-blur-2xl border border-black/10 rounded-3xl focus-within:ring-2 focus-within:ring-indigo-300 w-[90%] max-w-6xl transition-all -translate-x-1/2 duration-300 transform"
+      className="top-2 left-1/2 z-50 fixed bg-black/5 hover:bg-black/8 shadow-lg hover:shadow-xl backdrop-blur-xl hover:backdrop-blur-2xl border border-black/10 rounded-3xl focus-within:ring-2 focus-within:ring-indigo-300 w-[97%] max-w-full transition-all -translate-x-1/2 duration-300 transform"
       style={{ height: "52px" }}
       aria-label="Main navigation"
     >

@@ -8,6 +8,9 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import GuestRoute from "../components/GuestRoute";
 import Logout from "../pages/Logout";
 import AddEmployee from "../pages/AddEmployee";
+import Employees from "../pages/Employees";
+import ViewEmployee from "../pages/ViewEmployee";
+import LeaveManagement from "../pages/LeaveManagement";
 
 function AppRoutes() {
   return (
@@ -28,7 +31,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      // client/src/routes/AppRoutes.jsx
+
       <Route
         path="/employees/add"
         element={
@@ -37,6 +40,42 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/employees"
+        element={
+          <ProtectedRoute>
+            <Employees />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/employees/:id"
+        element={
+          <ProtectedRoute>
+            <ViewEmployee />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/employees/:id/edit"
+        element={
+          <ProtectedRoute>
+            <AddEmployee /> {/* Reuse with prefilled data */}
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/leaves"
+        element={
+          <ProtectedRoute>
+            <LeaveManagement />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/login"
         element={

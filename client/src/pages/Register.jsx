@@ -46,12 +46,14 @@ const Register = () => {
         password,
       });
 
-      const { token, fullName: name } = res.data;
+      // ✅ Fix: Access `data.token`, not `res.data.token`
+      const { token, ...userData } = res.data.data;
 
-      // Save to localStorage
+      // ✅ Save to localStorage
       localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(res.data.data));
+      localStorage.setItem("user", JSON.stringify(userData));
 
+      // ✅ Redirect to dashboard
       navigate("/", { replace: true });
     } catch (err) {
       setError(

@@ -7,11 +7,11 @@ import generateToken from "../utils/generateToken.js";
  * @route   POST /api/auth/register
  * @access  Public
  */
-const registerHR = async (req, res) => {
+const registerHR = async (req, res, next) => {
   const { fullName, email, phone, password, department, role } = req.body;
 
   try {
-    // 1. Validation: Required fields
+    // Validation
     if (!fullName || !email || !phone || !password) {
       return res.status(400).json({
         success: false,
@@ -19,7 +19,7 @@ const registerHR = async (req, res) => {
       });
     }
 
-    // 2. Check duplicates (email/phone)
+    // Check duplicates
     const existingByEmail = await HR.findOne({ email });
     const existingByPhone = await HR.findOne({ phone });
 
@@ -37,7 +37,7 @@ const registerHR = async (req, res) => {
       });
     }
 
-    // 3. Create HR
+    // Create HR
     const hr = await HR.create({
       fullName,
       email,
@@ -47,14 +47,14 @@ const registerHR = async (req, res) => {
       role: role || "HR",
     });
 
-    // 4. Generate token
+    // Generate token
     const token = generateToken(hr._id);
 
-    // 5. Update lastLogin
+    // Update lastLogin
     hr.lastLogin = Date.now();
     await hr.save();
 
-    // 6. Response (exclude password)
+    // Exclude password
     const { password: _, ...hrWithoutPassword } = hr.toObject();
 
     res.status(201).json({
@@ -65,7 +65,6 @@ const registerHR = async (req, res) => {
       },
     });
   } catch (error) {
-    // Delegate to global error handler
     next(error);
   }
 };
