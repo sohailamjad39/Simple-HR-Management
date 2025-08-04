@@ -8,28 +8,38 @@ const payrollSchema = new mongoose.Schema(
       ref: "Employee",
       required: true,
     },
-    month: {
-      type: Number,
-      required: true,
-    },
-    year: {
-      type: Number,
-      required: true,
-    },
+    month: Number,
+    year: Number,
     basicSalary: Number,
-    allowances: Number,
-    bonuses: Number,
-    deductions: Number,
-    tax: Number,
-    netSalary: Number,
-    status: {
-      type: String,
-      enum: ["Generated", "Paid", "Pending"],
-      default: "Generated",
+
+    allowances: {
+      type: Object,
+      default: {
+        HRA: 0,
+        Travel: 0,
+        Medical: 0,
+      },
     },
+
+    deductions: {
+      type: Object,
+      default: {
+        Tax: 0,
+        PF: 0,
+        Leaves: 0,
+      },
+    },
+
+    grossSalary: Number,
+    netSalary: Number,
     generatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "HR",
+    },
+    status: {
+      type: String,
+      enum: ["Draft", "Generated", "Paid"],
+      default: "Generated",
     },
   },
   {

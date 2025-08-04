@@ -1,40 +1,50 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-/**
- * @component Navbar
- * @description Floating glassmorphic navigation bar visible only to authenticated users.
- *              Displays user profile with dropdown menu for navigation and logout.
- *              Uses backdrop blur, subtle shadows, and rounded corners for modern aesthetic.
- *              Conditionally renders based on auth state to prevent hook mismatches.
- *
- * @access Protected (only renders if user is logged in)
- * @design Glassmorphism theme with indigo/purple gradient accents
- */
 const Navbar = () => {
   const navigate = useNavigate();
-  
-  // ✅ All hooks called unconditionally at the top
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [user, setUser] = useState(() => {
+    const userString = localStorage.getItem("user");
+    try {
+      return userString ? JSON.parse(userString) : null;
+    } catch (error) {
+      console.error("Failed to parse user data from localStorage", error);
+      return null;
+    }
+  });
+
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
 
-  // Retrieve user data from localStorage
-  const userString = localStorage.getItem("user");
-  let user = null;
-  try {
-    user = userString ? JSON.parse(userString) : null;
-  } catch (error) {
-    console.error("Failed to parse user data from localStorage", error);
-  }
+  // ✅ Load user from localStorage on mount
+  useEffect(() => {
+    const loadUser = () => {
+      const userString = localStorage.getItem("user");
+      try {
+        const parsed = userString ? JSON.parse(userString) : null;
+        setUser(parsed);
+      } catch (error) {
+        console.error("Failed to parse user data", error);
+        setUser(null);
+      }
+    };
+
+    // Listen for localStorage changes (cross-tab)
+    window.addEventListener("storage", loadUser);
+
+    // Listen for custom updates (same tab)
+    window.addEventListener("user-updated", loadUser);
+
+    return () => {
+      window.removeEventListener("storage", loadUser);
+      window.removeEventListener("user-updated", loadUser);
+    };
+  }, []);
 
   // 🔒 Conditionally return after hooks
   if (!user) return null;
 
-  /**
-   * Extracts user initials from fullName
-   * @returns {string} 1-2 uppercase letters (e.g., "JD" or "S")
-   */
   const getInitials = () => {
     if (!user.fullName) return "??";
     const cleanName = user.fullName.trim();
@@ -48,16 +58,13 @@ const Navbar = () => {
       : `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
   };
 
-  /**
-   * Handles logout: clears auth data and redirects to login
-   */
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login", { replace: true });
   };
 
-  // Close dropdown when clicking outside (only when dropdown is open and user exists)
+  // Close dropdown when clicking outside
   useEffect(() => {
     if (!dropdownOpen) return;
 

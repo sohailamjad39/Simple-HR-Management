@@ -3,35 +3,61 @@ import mongoose from "mongoose";
 
 const attendanceSchema = new mongoose.Schema(
   {
+    // 🔹 Employee
     employee: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employee",
       required: true,
     },
+
+    // 🔹 Date
     date: {
       type: Date,
       required: true,
       unique: true,
     },
-    status: {
-      type: String,
-      enum: ["Present", "Absent", "Leave", "Late"],
-      required: true,
-    },
+
+    // 🔹 Time
     inTime: {
-      type: String,
+      type: Date,
     },
     outTime: {
-      type: String,
+      type: Date,
     },
-    notes: String,
+
+    // 🔹 Status
+    status: {
+      type: String,
+      enum: ["Present", "Absent", "Leave", "Half-Day"],
+      default: "Absent",
+    },
+
+    // 🔹 Late mark
+    isLate: {
+      type: Boolean,
+      default: false,
+    },
+
+    // 🔹 Remarks
+    remarks: {
+      type: String,
+      trim: true,
+      maxlength: 300,
+    },
+
+    // 🔹 Recorded by HR
+    recordedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "HR",
+      required: true,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Ensure one attendance per employee per day
+// 🔸 Prevent duplicate attendance for same date
 attendanceSchema.index({ employee: 1, date: 1 }, { unique: true });
 
 export default mongoose.model("Attendance", attendanceSchema);

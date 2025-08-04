@@ -1,4 +1,5 @@
 import React from "react";
+
 import { Routes, Route } from "react-router-dom";
 import PageNotFound from "../pages/PageNotFound";
 import Dashboard from "../pages/Dashboard";
@@ -11,6 +12,9 @@ import AddEmployee from "../pages/AddEmployee";
 import Employees from "../pages/Employees";
 import ViewEmployee from "../pages/ViewEmployee";
 import LeaveManagement from "../pages/LeaveManagement";
+import Attendance from "../pages/Attendance";
+import Payroll from "../pages/Payroll";
+import Profile from "../pages/Profile";
 
 function AppRoutes() {
   return (
@@ -31,6 +35,16 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+      
 
       <Route
         path="/employees/add"
@@ -62,7 +76,7 @@ function AppRoutes() {
         path="/employees/:id/edit"
         element={
           <ProtectedRoute>
-            <AddEmployee /> {/* Reuse with prefilled data */}
+            <AddEmployee /> 
           </ProtectedRoute>
         }
       />
@@ -72,6 +86,24 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <LeaveManagement />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/attendance"
+        element={
+          <ProtectedRoute>
+            <Attendance />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/payroll"
+        element={
+          <ProtectedRoute>
+            <Payroll />
           </ProtectedRoute>
         }
       />
