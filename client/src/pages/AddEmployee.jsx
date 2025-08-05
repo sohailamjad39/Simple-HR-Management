@@ -5,10 +5,9 @@ import api from "../services/api";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 
-// Reuse the same form for Add/Edit
 const AddEmployee = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // If editing, id will be present
+  const { id } = useParams();
   const isEdit = !!id;
 
   const [formData, setFormData] = useState({
@@ -21,8 +20,6 @@ const AddEmployee = () => {
     joiningDate: "",
     dateOfBirth: "",
     gender: "",
-    employmentType: "Full-Time",
-    status: "Active",
     address: {
       street: "",
       city: "",
@@ -35,10 +32,34 @@ const AddEmployee = () => {
       phone: "",
       relationship: "",
     },
+    salary: "",
+    bankAccount: "",
+    taxId: "",
+    employmentType: "Full-Time",
+    status: "Active",
   });
 
+  const [departments, setDepartments] = useState([]);
+  const [designations, setDesignations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Fetch departments and designations
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [deptRes, desigRes] = await Promise.all([
+          api.get("/settings/departments"),
+          api.get("/settings/designations"),
+        ]);
+        setDepartments(Array.isArray(deptRes.data.data) ? deptRes.data.data : []);
+        setDesignations(Array.isArray(desigRes.data.data) ? desigRes.data.data : []);
+      } catch (err) {
+        console.error("Failed to load departments or designations", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   // Fetch employee data if editing
   useEffect(() => {
@@ -46,7 +67,35 @@ const AddEmployee = () => {
       const fetchEmployee = async () => {
         try {
           const res = await api.get(`/employees/${id}`);
-          setFormData(res.data.data);
+          const emp = res.data.data;
+          setFormData({
+            fullName: emp.fullName || "",
+            email: emp.email || "",
+            phone: emp.phone || "",
+            employeeId: emp.employeeId || "",
+            department: emp.department || "",
+            designation: emp.designation || "",
+            joiningDate: emp.joiningDate?.split("T")[0] || "",
+            dateOfBirth: emp.dateOfBirth?.split("T")[0] || "",
+            gender: emp.gender || "",
+            address: {
+              street: emp.address?.street || "",
+              city: emp.address?.city || "",
+              state: emp.address?.state || "",
+              postalCode: emp.address?.postalCode || "",
+              country: emp.address?.country || "",
+            },
+            emergencyContact: {
+              name: emp.emergencyContact?.name || "",
+              phone: emp.emergencyContact?.phone || "",
+              relationship: emp.emergencyContact?.relationship || "",
+            },
+            salary: emp.salary?.total || "",
+            bankAccount: emp.bankAccount || "",
+            taxId: emp.taxId || "",
+            employmentType: emp.employmentType || "Full-Time",
+            status: emp.status || "Active",
+          });
         } catch (err) {
           setError("Failed to load employee data");
         }
@@ -58,7 +107,6 @@ const AddEmployee = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     const keys = name.split(".");
-
     if (keys.length === 2) {
       setFormData((prev) => ({
         ...prev,
@@ -75,31 +123,25 @@ const AddEmployee = () => {
     setLoading(true);
 
     try {
-      if (isEdit) {
-        // ✅ PUT request for update
-        await api.put(`/employees/${id}`, formData);
-        window.dispatchEvent(new Event("data-updated"));
-      } else {
-        // ✅ POST request for create
-        await api.post("/employees", formData);
-        window.dispatchEvent(new Event("data-updated"));
-      }
+      const payload = {
+        ...formData,
+        salary: { total: formData.salary ? Number(formData.salary) : 0 },
+      };
 
-      navigate("/employees", { state: { saved: true } });
+      if (isEdit) {
+        await api.put(`/employees/${id}`, payload);
+      } else {
+        await api.post("/employees", payload);
+      }
+      window.dispatchEvent(new Event("data-updated"));
+      navigate("/employees");
     } catch (err) {
       setError(
-        err.response?.data?.message ||
-          "Failed to save employee. Please try again."
+        err.response?.data?.message || "Failed to save employee"
       );
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatDateForInput = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toISOString().split("T")[0];
   };
 
   return (
@@ -107,34 +149,22 @@ const AddEmployee = () => {
       <Navbar />
       <div className="bg-gray-50 pl-0 lg:pl-64 min-h-screen">
         <Sidebar />
-
         <div className="mx-auto p-6 pt-20 max-w-4xl">
-          <h1 className="mb-2 font-bold text-gray-900 text-2xl">
+          <h1 className="mb-6 font-bold text-gray-900 text-2xl">
             {isEdit ? "Edit Employee" : "Add New Employee"}
           </h1>
-          <p className="mb-8 text-gray-600">
-            {isEdit
-              ? "Update the details of the employee."
-              : "Fill in the details to onboard a new team member."}
-          </p>
-
           {error && (
-            <div className="bg-red-50 mb-6 px-4 py-3 border border-red-200 rounded-lg text-red-700 text-sm text-center">
+            <div className="bg-red-50 mb-6 p-4 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
             </div>
           )}
-
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Info */}
-            <div className="bg-white/70 shadow-sm backdrop-blur-sm p-6 border border-gray-100 rounded-2xl">
-              <h2 className="mb-5 font-semibold text-gray-900 text-lg">
-                Basic Information
-              </h2>
-              <div className="gap-5 grid grid-cols-1 md:grid-cols-2">
+            <div className="bg-white shadow-sm p-6 border border-gray-100 rounded-2xl">
+              <h2 className="mb-4 font-semibold text-gray-900 text-lg">Personal Information</h2>
+              <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Full Name *
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Full Name *</label>
                   <input
                     type="text"
                     name="fullName"
@@ -146,37 +176,19 @@ const AddEmployee = () => {
                   />
                 </div>
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Employee ID *
-                  </label>
-                  <input
-                    type="text"
-                    name="employeeId"
-                    value={formData.employeeId}
-                    onChange={handleChange}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
-                    placeholder="EMP001"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Email *
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Email *</label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
-                    placeholder="john@company.com"
+                    placeholder="john@example.com"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Phone *
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Phone *</label>
                   <input
                     type="tel"
                     name="phone"
@@ -188,62 +200,29 @@ const AddEmployee = () => {
                   />
                 </div>
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Department *
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Employee ID *</label>
                   <input
                     type="text"
-                    name="department"
-                    value={formData.department}
+                    name="employeeId"
+                    value={formData.employeeId}
                     onChange={handleChange}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
-                    placeholder="Engineering"
+                    placeholder="EMP001"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Designation *
-                  </label>
-                  <input
-                    type="text"
-                    name="designation"
-                    value={formData.designation}
-                    onChange={handleChange}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
-                    placeholder="Software Engineer"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Joining Date *
-                  </label>
-                  <input
-                    type="date"
-                    name="joiningDate"
-                    value={formatDateForInput(formData.joiningDate)}
-                    onChange={handleChange}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Date of Birth
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Date of Birth</label>
                   <input
                     type="date"
                     name="dateOfBirth"
-                    value={formatDateForInput(formData.dateOfBirth)}
+                    value={formData.dateOfBirth}
                     onChange={handleChange}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
                   />
                 </div>
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Gender
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Gender</label>
                   <select
                     name="gender"
                     value={formData.gender}
@@ -256,10 +235,62 @@ const AddEmployee = () => {
                     <option value="Other">Other</option>
                   </select>
                 </div>
+              </div>
+            </div>
+
+            {/* Job Info */}
+            <div className="bg-white shadow-sm p-6 border border-gray-100 rounded-2xl">
+              <h2 className="mb-4 font-semibold text-gray-900 text-lg">Job Information</h2>
+              <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Employment Type
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Department *</label>
+                  <select
+                    name="department"
+                    value={formData.department}
+                    onChange={handleChange}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
+                    required
+                  >
+                    <option value="">Select Department</option>
+                    {departments.map((dept) => (
+                      <option key={dept._id} value={dept.name}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Designation *</label>
+                  <select
+                    name="designation"
+                    value={formData.designation}
+                    onChange={handleChange}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
+                    required
+                  >
+                    <option value="">Select Designation</option>
+                    {designations
+                      .filter((d) => !formData.department || d.department?.name === formData.department)
+                      .map((desig) => (
+                        <option key={desig._id} value={desig.title}>
+                          {desig.title} {desig.level ? `(${desig.level})` : ""}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Joining Date *</label>
+                  <input
+                    type="date"
+                    name="joiningDate"
+                    value={formData.joiningDate}
+                    onChange={handleChange}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Employment Type</label>
                   <select
                     name="employmentType"
                     value={formData.employmentType}
@@ -273,9 +304,7 @@ const AddEmployee = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Status
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Status</label>
                   <select
                     name="status"
                     value={formData.status}
@@ -284,21 +313,18 @@ const AddEmployee = () => {
                   >
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
+                    <option value="Terminated">Terminated</option>
                   </select>
                 </div>
               </div>
             </div>
 
             {/* Address */}
-            <div className="bg-white/70 shadow-sm backdrop-blur-sm p-6 border border-gray-100 rounded-2xl">
-              <h2 className="mb-5 font-semibold text-gray-900 text-lg">
-                Address
-              </h2>
-              <div className="gap-5 grid grid-cols-1 md:grid-cols-2">
-                <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Street
-                  </label>
+            <div className="bg-white shadow-sm p-6 border border-gray-100 rounded-2xl">
+              <h2 className="mb-4 font-semibold text-gray-900 text-lg">Address</h2>
+              <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Street</label>
                   <input
                     type="text"
                     name="address.street"
@@ -309,35 +335,29 @@ const AddEmployee = () => {
                   />
                 </div>
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    City
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">City</label>
                   <input
                     type="text"
                     name="address.city"
                     value={formData.address.city}
                     onChange={handleChange}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
-                    placeholder="New York"
+                    placeholder="Cityville"
                   />
                 </div>
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    State
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">State</label>
                   <input
                     type="text"
                     name="address.state"
                     value={formData.address.state}
                     onChange={handleChange}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
-                    placeholder="NY"
+                    placeholder="California"
                   />
                 </div>
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Postal Code
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Postal Code</label>
                   <input
                     type="text"
                     name="address.postalCode"
@@ -348,9 +368,7 @@ const AddEmployee = () => {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Country
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Country</label>
                   <input
                     type="text"
                     name="address.country"
@@ -364,15 +382,11 @@ const AddEmployee = () => {
             </div>
 
             {/* Emergency Contact */}
-            <div className="bg-white/70 shadow-sm backdrop-blur-sm p-6 border border-gray-100 rounded-2xl">
-              <h2 className="mb-5 font-semibold text-gray-900 text-lg">
-                Emergency Contact
-              </h2>
-              <div className="gap-5 grid grid-cols-1 md:grid-cols-3">
+            <div className="bg-white shadow-sm p-6 border border-gray-100 rounded-2xl">
+              <h2 className="mb-4 font-semibold text-gray-900 text-lg">Emergency Contact</h2>
+              <div className="gap-6 grid grid-cols-1 md:grid-cols-3">
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Name
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Name</label>
                   <input
                     type="text"
                     name="emergencyContact.name"
@@ -383,9 +397,7 @@ const AddEmployee = () => {
                   />
                 </div>
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Phone
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Phone</label>
                   <input
                     type="tel"
                     name="emergencyContact.phone"
@@ -396,9 +408,7 @@ const AddEmployee = () => {
                   />
                 </div>
                 <div>
-                  <label className="block mb-2 font-medium text-gray-700 text-sm">
-                    Relationship
-                  </label>
+                  <label className="block mb-2 font-medium text-gray-700 text-sm">Relationship</label>
                   <input
                     type="text"
                     name="emergencyContact.relationship"
@@ -411,27 +421,21 @@ const AddEmployee = () => {
               </div>
             </div>
 
-            {/* Submit Button */}
-            <div className="flex justify-end">
+            {/* Actions */}
+            <div className="flex justify-end gap-4 pt-6">
               <button
                 type="button"
-                onClick={() => navigate(-1)}
-                className="bg-gray-100 hover:bg-gray-200 mr-3 px-5 py-2 rounded-lg font-medium text-gray-700 text-sm transition-colors"
+                onClick={() => navigate("/employees")}
+                className="hover:bg-gray-50 px-6 py-2 border border-gray-300 rounded-lg text-gray-700 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-5 py-2 rounded-lg font-medium text-white text-sm transition-colors"
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-6 py-2 rounded-lg text-white transition-colors cursor-pointer"
               >
-                {loading
-                  ? isEdit
-                    ? "Updating..."
-                    : "Saving..."
-                  : isEdit
-                  ? "Update Employee"
-                  : "Add Employee"}
+                {loading ? "Saving..." : isEdit ? "Update Employee" : "Add Employee"}
               </button>
             </div>
           </form>

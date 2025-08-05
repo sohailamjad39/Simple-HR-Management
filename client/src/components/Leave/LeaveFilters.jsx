@@ -1,6 +1,5 @@
 // client/src/components/Leave/LeaveFilters.jsx
 export default function LeaveFilters({ filters, setFilters }) {
-  // ✅ Reset all filters to default
   const handleReset = () => {
     setFilters({
       search: "",
@@ -97,7 +96,7 @@ export default function LeaveFilters({ filters, setFilters }) {
           <button
             type="button"
             onClick={handleReset}
-            className="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg w-full text-gray-700 text-sm transition-colors"
+            className="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg w-full text-gray-700 text-sm transition-colors cursor-pointer"
           >
             Reset
           </button>

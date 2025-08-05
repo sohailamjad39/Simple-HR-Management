@@ -15,7 +15,6 @@ export default function RecentActivity() {
         }
       } catch (err) {
         console.error("Failed to load recent activity", err);
-        // Fallback: don't update state, empty list will show
       } finally {
         setLoading(false);
       }
@@ -24,7 +23,6 @@ export default function RecentActivity() {
     fetchActivity();
   }, []);
 
-  // Listen for real-time refresh
   useEffect(() => {
     const handleRefresh = () => {
       fetchActivity();

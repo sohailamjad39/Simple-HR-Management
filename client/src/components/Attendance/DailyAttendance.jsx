@@ -6,14 +6,35 @@ import ConfirmModal from "./ConfirmModal";
 import AttendanceFilters from "./AttendanceFilters";
 
 const CACHE_KEY = "attendance_daily_cache";
+const LAST_CLEAR_KEY = "attendance_last_cache_clear";
+
+const today = () => new Date().toISOString().split("T")[0];
+
+const isNewDay = () => {
+  const lastClear = localStorage.getItem(LAST_CLEAR_KEY);
+  return lastClear !== today();
+};
+
+const clearCacheIfNewDay = () => {
+  if (isNewDay()) {
+    localStorage.removeItem(CACHE_KEY);
+    localStorage.setItem(LAST_CLEAR_KEY, today());
+  }
+};
 
 export default function DailyAttendance({ date, setDate, onSuccess }) {
   const [attendance, setAttendance] = useState(() => {
+    clearCacheIfNewDay();
+
     const saved = localStorage.getItem(CACHE_KEY);
     if (saved) {
       try {
-        const { data } = JSON.parse(saved);
-        return Array.isArray(data) ? data : [];
+        const { data, date: cachedDate, filters: cachedFilters } = JSON.parse(saved);
+
+        // Only use cache if same date and filters
+        if (cachedDate === date && JSON.stringify(cachedFilters) === JSON.stringify(filters)) {
+          return Array.isArray(data) ? data : [];
+        }
       } catch (e) {
         console.warn("Failed to parse cached attendance", e);
       }
@@ -39,9 +60,9 @@ export default function DailyAttendance({ date, setDate, onSuccess }) {
     });
   };
 
-  // ✅ Fetch fresh data in background
   const fetchFreshData = async () => {
     if (!date) return;
+    setLoading(true);
     try {
       const res = await api.get("/attendance/daily", {
         params: { date, ...filters },
@@ -49,26 +70,28 @@ export default function DailyAttendance({ date, setDate, onSuccess }) {
       const data = Array.isArray(res.data.fullAttendance) ? res.data.fullAttendance : [];
 
       setAttendance(data);
-      // ✅ Update cache
       localStorage.setItem(
         CACHE_KEY,
         JSON.stringify({ data, date, filters, timestamp: Date.now() })
       );
+      onSuccess?.(data);
     } catch (err) {
       console.error("Attendance fetch error:", err);
-      // ✅ Keep showing cached data
+      // Keep showing cached data
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ✅ Load cached data on mount, then fetch fresh
+  useEffect(() => {
+    clearCacheIfNewDay();
+  }, []);
+
   useEffect(() => {
     const saved = localStorage.getItem(CACHE_KEY);
     if (saved) {
       try {
         const { data, date: cachedDate, filters: cachedFilters } = JSON.parse(saved);
-
-        // Optional: only reuse if same date/filters
-        // Otherwise, just show something while fresh loads
         if (cachedDate === date && JSON.stringify(cachedFilters) === JSON.stringify(filters)) {
           setAttendance(data);
         }
@@ -77,11 +100,9 @@ export default function DailyAttendance({ date, setDate, onSuccess }) {
       }
     }
 
-    // ✅ Always fetch fresh data in background
     fetchFreshData();
-  }, [date, filters]);
+  }, [date, filters, onSuccess]);
 
-  // ✅ Listen for global updates (e.g., add/edit/delete)
   useEffect(() => {
     const handleRefresh = () => {
       fetchFreshData();
@@ -98,6 +119,7 @@ export default function DailyAttendance({ date, setDate, onSuccess }) {
       await api.delete(`/attendance/${id}`);
       setAttendance((prev) => prev.filter((att) => att._id !== id));
       onSuccess?.();
+      window.dispatchEvent(new Event("data-updated"));
     } catch (err) {
       alert("Failed to delete attendance");
     } finally {
@@ -119,6 +141,7 @@ export default function DailyAttendance({ date, setDate, onSuccess }) {
             );
             setShowEditModal(null);
             onSuccess?.();
+            window.dispatchEvent(new Event("data-updated"));
           }}
         />
       )}
@@ -197,7 +220,7 @@ export default function DailyAttendance({ date, setDate, onSuccess }) {
                       <>
                         <button
                           onClick={() => setShowEditModal(att)}
-                          className="text-blue-600 hover:text-blue-800 text-xs"
+                          className="text-blue-600 hover:text-blue-800 text-xs cursor-pointer"
                         >
                           Edit
                         </button>
@@ -208,7 +231,7 @@ export default function DailyAttendance({ date, setDate, onSuccess }) {
                               name: att.employee.fullName,
                             })
                           }
-                          className="text-red-600 hover:text-red-800 text-xs"
+                          className="text-red-600 hover:text-red-800 text-xs cursor-pointer"
                         >
                           Delete
                         </button>
@@ -223,7 +246,6 @@ export default function DailyAttendance({ date, setDate, onSuccess }) {
           </tbody>
         </table>
 
-        {/* ✅ Optional: Show "Updating..." in corner */}
         {loading && (
           <div className="top-2 right-2 absolute text-gray-500 text-xs">Loading...</div>
         )}

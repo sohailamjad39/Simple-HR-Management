@@ -13,14 +13,14 @@ export default function ConfirmModal({ isOpen, title, message, onConfirm, onCanc
               <button
                 type="button"
                 onClick={onCancel}
-                className="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-gray-700 text-sm transition-colors"
+                className="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-gray-700 text-sm transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={onConfirm}
-                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white text-sm transition-colors"
+                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white text-sm transition-colors cursor-pointer"
               >
                 Confirm
               </button>

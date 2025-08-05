@@ -29,11 +29,14 @@ export default function SalaryConfig() {
     if (!from || !to || !rate) return;
     setConfig((prev) => ({
       ...prev,
-      taxBrackets: [...prev.taxBrackets, {
-        from: Number(from),
-        to: Number(to),
-        rate: Number(rate),
-      }],
+      taxBrackets: [
+        ...prev.taxBrackets,
+        {
+          from: Number(from),
+          to: Number(to),
+          rate: Number(rate),
+        },
+      ],
     }));
     setNewBracket({ from: "", to: "", rate: "" });
   };
@@ -53,7 +56,7 @@ export default function SalaryConfig() {
 
   return (
     <>
-      {/* ✅ Success Toast */}
+      {/* Success Toast */}
       {showSuccess && (
         <SuccessToast
           message="Salary configuration saved!"
@@ -63,14 +66,20 @@ export default function SalaryConfig() {
 
       <div className="bg-white/70 border border-gray-100 rounded-2xl overflow-hidden">
         <div className="p-6 border-gray-200 border-b">
-          <h3 className="font-semibold text-gray-900 text-lg">Salary Configuration</h3>
-          <p className="text-gray-600 text-sm">Set allowance percentages, deductions, and tax rules</p>
+          <h3 className="font-semibold text-gray-900 text-lg">
+            Salary Configuration
+          </h3>
+          <p className="text-gray-600 text-sm">
+            Set allowance percentages, deductions, and tax rules
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 p-6">
           <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
             <div>
-              <label className="block mb-1 font-medium text-gray-700 text-sm">Basic Salary (%)</label>
+              <label className="block mb-1 font-medium text-gray-700 text-sm">
+                Basic Salary (%)
+              </label>
               <input
                 type="number"
                 name="basicPercent"
@@ -84,7 +93,9 @@ export default function SalaryConfig() {
             </div>
 
             <div>
-              <label className="block mb-1 font-medium text-gray-700 text-sm">HRA (%)</label>
+              <label className="block mb-1 font-medium text-gray-700 text-sm">
+                HRA (%)
+              </label>
               <input
                 type="number"
                 name="hraPercent"
@@ -98,7 +109,9 @@ export default function SalaryConfig() {
             </div>
 
             <div>
-              <label className="block mb-1 font-medium text-gray-700 text-sm">Travel Allowance (Rs)</label>
+              <label className="block mb-1 font-medium text-gray-700 text-sm">
+                Travel Allowance (Rs)
+              </label>
               <input
                 type="number"
                 name="travelAllowance"
@@ -111,7 +124,9 @@ export default function SalaryConfig() {
             </div>
 
             <div>
-              <label className="block mb-1 font-medium text-gray-700 text-sm">PF Deduction (%)</label>
+              <label className="block mb-1 font-medium text-gray-700 text-sm">
+                PF Deduction (%)
+              </label>
               <input
                 type="number"
                 name="pfDeduction"
@@ -131,13 +146,14 @@ export default function SalaryConfig() {
               {config.taxBrackets.map((bracket, index) => (
                 <div key={index} className="flex items-center gap-2 text-sm">
                   <span>
-                    Rs.{bracket.from.toLocaleString()} – Rs.{bracket.to ? bracket.to.toLocaleString() : "Above"}
+                    Rs.{bracket.from.toLocaleString()} – Rs.
+                    {bracket.to ? bracket.to.toLocaleString() : "Above"}
                   </span>
                   <span className="font-medium">{bracket.rate}%</span>
                   <button
                     type="button"
                     onClick={() => handleRemoveBracket(index)}
-                    className="ml-auto text-red-500 hover:text-red-700"
+                    className="ml-auto text-red-500 hover:text-red-700 cursor-pointer"
                   >
                     ×
                   </button>
@@ -150,27 +166,33 @@ export default function SalaryConfig() {
                 type="number"
                 placeholder="From"
                 value={newBracket.from}
-                onChange={(e) => setNewBracket({ ...newBracket, from: e.target.value })}
+                onChange={(e) =>
+                  setNewBracket({ ...newBracket, from: e.target.value })
+                }
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
               <input
                 type="number"
                 placeholder="To"
                 value={newBracket.to}
-                onChange={(e) => setNewBracket({ ...newBracket, to: e.target.value })}
+                onChange={(e) =>
+                  setNewBracket({ ...newBracket, to: e.target.value })
+                }
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
               <input
                 type="number"
                 placeholder="Rate %"
                 value={newBracket.rate}
-                onChange={(e) => setNewBracket({ ...newBracket, rate: e.target.value })}
+                onChange={(e) =>
+                  setNewBracket({ ...newBracket, rate: e.target.value })
+                }
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
               />
               <button
                 type="button"
                 onClick={handleAddBracket}
-                className="bg-indigo-600 px-3 py-2 rounded-lg text-white"
+                className="bg-indigo-600 px-3 py-2 rounded-lg text-white cursor-pointer"
               >
                 Add
               </button>
@@ -180,7 +202,7 @@ export default function SalaryConfig() {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="bg-indigo-600 hover:bg-indigo-700 px-6 py-2 rounded-lg font-medium text-white transition-colors"
+              className="bg-indigo-600 hover:bg-indigo-700 px-6 py-2 rounded-lg font-medium text-white transition-colors cursor-pointer"
             >
               Save Configuration
             </button>

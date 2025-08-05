@@ -17,7 +17,6 @@ class ErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
-      // Reset on navigation
       return (
         <div className="flex justify-center items-center bg-gray-50 h-screen">
           <div className="text-center">

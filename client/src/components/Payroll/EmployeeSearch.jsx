@@ -37,7 +37,7 @@ export default function EmployeeSearch({
                 key={emp._id}
                 type="button"
                 onClick={() => onSelect(emp)}
-                className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
+                className={`w-full text-left px-3 py-2 rounded text-sm cursor-pointer transition-colors ${
                   selectedEmployee?._id === emp._id
                     ? "bg-indigo-100 text-indigo-800"
                     : "hover:bg-gray-100"

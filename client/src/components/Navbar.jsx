@@ -108,7 +108,7 @@ const Navbar = () => {
             <button
               ref={buttonRef}
               onClick={() => setDropdownOpen((prev) => !prev)}
-              className="flex items-center gap-2 bg-white/40 hover:bg-white/60 shadow-sm hover:shadow-md backdrop-blur-md px-3 py-1.5 border border-white/30 rounded-full focus:outline-none focus:ring-1 focus:ring-indigo-200 font-medium text-gray-800 text-xs hover:scale-105 active:scale-100 transition-all duration-200"
+              className="flex items-center gap-2 bg-white/40 hover:bg-white/60 shadow-sm hover:shadow-md backdrop-blur-md px-3 py-1.5 border border-white/30 rounded-full focus:outline-none focus:ring-1 focus:ring-indigo-200 font-medium text-gray-800 text-xs hover:scale-105 active:scale-100 transition-all duration-200 cursor-pointer"
               aria-expanded={dropdownOpen}
               aria-haspopup="true"
               aria-label="User menu"
@@ -155,7 +155,7 @@ const Navbar = () => {
                           navigate(item.route);
                           setDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-4 py-2.5 font-medium text-sm transition-all hover:bg-indigo-50 hover:text-indigo-600 ${
+                        className={`w-full text-left px-4 py-2.5 font-medium text-sm transition-all cursor-pointer hover:bg-indigo-50 hover:text-indigo-600 ${
                           index === 0 ? 'rounded-t-2xl' : ''
                         } ${index === array.length - 1 ? 'rounded-b-2xl' : ''} hover:rounded-2xl`}
                         role="menuitem"
@@ -169,7 +169,7 @@ const Navbar = () => {
                   <li>
                     <button
                       onClick={handleLogoutClick} 
-                      className="hover:bg-red-50 px-4 py-2.5 border-gray-200/70 border-t hover:rounded-2xl rounded-b-2xl w-full font-medium text-red-600 text-sm text-left transition-all"
+                      className="hover:bg-red-50 px-4 py-2.5 border-gray-200/70 border-t hover:rounded-2xl rounded-b-2xl w-full font-medium text-red-600 text-sm text-left transition-all cursor-pointer"
                       role="menuitem"
                     >
                       Logout

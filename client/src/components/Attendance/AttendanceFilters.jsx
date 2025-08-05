@@ -57,7 +57,7 @@ export default function AttendanceFilters({ filters, setFilters, onReset }) {
           <button
             type="button"
             onClick={onReset}
-            className="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg w-full text-gray-700 text-sm transition-colors"
+            className="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg w-full text-gray-700 text-sm transition-colors cursor-pointer"
           >
             Reset
           </button>

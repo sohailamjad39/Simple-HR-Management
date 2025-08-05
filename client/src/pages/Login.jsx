@@ -1,6 +1,6 @@
 // client/src/pages/Login.jsx
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link, useNavigate } from "react-router-dom"; 
 import api from "../services/api";
 
 const Login = () => {
@@ -12,7 +12,7 @@ const Login = () => {
   const [error, setError] = useState("");
 
   const { email, password } = formData;
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -135,7 +135,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative flex justify-center bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-4 py-3 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 w-full font-medium text-white text-sm transition-colors duration-200 disabled:cursor-not-allowed"
+              className="group relative flex justify-center bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-4 py-3 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 w-full font-medium text-white text-sm transition-colors duration-200 cursor-pointer disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
@@ -174,7 +174,7 @@ const Login = () => {
             Don't have an account?{" "}
             <Link
               to="/register"
-              className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-150"
+              className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-150 cursor-pointer"
             >
               Sign up
             </Link>

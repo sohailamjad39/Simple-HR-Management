@@ -146,7 +146,7 @@ const Dashboard = () => {
     } catch (err) {
       console.error("Failed to load dashboard data", err);
       if (err.response?.status === 401) {
-        navigate("/login", { replace: true });
+        navigate("/logout", { replace: true });
       }
     } finally {
       setLoading(false);
@@ -194,7 +194,7 @@ const Dashboard = () => {
             <button
               onClick={fetchStats}
               disabled={loading}
-              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-4 py-2 rounded-lg text-white text-sm"
+              className="hidden bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-4 py-2 rounded-lg text-white text-sm cursor-pointer"
             >
               {loading ? "Refreshing..." : "Refresh"}
             </button>

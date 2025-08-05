@@ -35,24 +35,24 @@ const LeaveManagement = () => {
   const [showEditModal, setShowEditModal] = useState(null);
   const [employees, setEmployees] = useState([]);
 
-  // ✅ Load cached data on mount
+  // Load cached data on mount
   useEffect(() => {
     const saved = localStorage.getItem(CACHE_KEY);
     if (saved) {
       try {
         const { data } = JSON.parse(saved);
-        setLeaves(data); // ✅ Show cached leaves instantly
+        setLeaves(data); // Show cached leaves instantly
         setLoading(false);
       } catch (e) {
         console.warn("Failed to parse cached leaves", e);
       }
     }
 
-    // ✅ Always fetch fresh data in background
+    // Always fetch fresh data in background
     fetchFreshLeaves();
   }, []);
 
-  // ✅ Fetch fresh data without blocking UI
+  // Fetch fresh data without blocking UI
   const fetchFreshLeaves = async () => {
     try {
       const res = await api.get("/leaves", { params: filters });
@@ -70,7 +70,7 @@ const LeaveManagement = () => {
         setError("Session expired. Please log in again.");
         navigate("/login", { replace: true });
       } else {
-        // ✅ Keep showing cached data if API fails
+        // Keep showing cached data if API fails
         setError(err.response?.data?.message || "Failed to refresh leaves");
       }
     } finally {
@@ -78,7 +78,7 @@ const LeaveManagement = () => {
     }
   };
 
-  // ✅ Listen for external updates (add/edit/delete)
+  // Listen for external updates (add/edit/delete)
   useEffect(() => {
     const handleRefresh = () => {
       fetchFreshLeaves(); // Re-fetch in background
@@ -90,7 +90,7 @@ const LeaveManagement = () => {
     };
   }, []);
 
-  // ✅ Fetch employees for modals
+  // Fetch employees for modals
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
@@ -103,7 +103,7 @@ const LeaveManagement = () => {
     fetchEmployees();
   }, []);
 
-  // ✅ Refetch when filters change
+  // Refetch when filters change
   useEffect(() => {
     fetchFreshLeaves();
   }, [filters]);
@@ -111,7 +111,7 @@ const LeaveManagement = () => {
   const handleDelete = async (id, employeeName) => {
     try {
       await api.delete(`/leaves/${id}`);
-      // ✅ Trigger global update
+      // Trigger global update
       window.dispatchEvent(new Event("data-updated"));
     } catch (err) {
       alert("Failed to delete leave");
@@ -131,13 +131,13 @@ const LeaveManagement = () => {
             <h1 className="font-bold text-gray-900 text-2xl">Leave Management</h1>
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-medium text-white transition-colors"
+              className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-medium text-white transition-colors cursor-pointer"
             >
               + Add Leave
             </button>
           </div>
 
-          {/* ✅ Show error only if no cached data */}
+          {/* Show error only if no cached data */}
           {error && leaves.length === 0 && (
             <div className="bg-red-50 mb-6 px-4 py-3 border border-red-200 rounded-lg text-red-700 text-sm text-center">
               {error}

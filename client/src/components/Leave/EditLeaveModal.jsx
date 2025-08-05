@@ -203,7 +203,7 @@ export default function EditLeaveModal({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-gray-700 text-xs transition-colors"
+            className="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-gray-700 text-xs transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -211,7 +211,7 @@ export default function EditLeaveModal({
             type="submit"
             disabled={loading}
             onClick={handleSubmit}
-            className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-3 py-1 rounded text-white text-xs transition-colors"
+            className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-3 py-1 rounded text-white text-xs transition-colors cursor-pointer"
           >
             {loading ? "Updating..." : "Update Leave"}
           </button>

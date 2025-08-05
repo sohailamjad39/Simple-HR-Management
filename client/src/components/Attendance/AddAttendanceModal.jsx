@@ -3,6 +3,7 @@ import { useState } from "react";
 import api from "../../services/api";
 
 export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
+
   const [formData, setFormData] = useState({
     employee: "",
     date: new Date().toISOString().split("T")[0],
@@ -27,23 +28,20 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-  
+
     if (!formData.employee) {
       return setError("Please select an employee");
     }
-  
+
     setLoading(true);
-  
+
     try {
       const res = await api.post("/attendance/manual", formData);
-      onSuccess(res.data.data);
+      onSuccess?.(res.data.data);
       onClose();
       window.dispatchEvent(new Event("data-updated"));
     } catch (err) {
       console.error("Add Attendance Error:", err);
-      console.error("Error response:", err.response);
-      console.error("Error request:", err.request); 
-  
       setError(
         err.response?.data?.message ||
         err.message ||
@@ -57,19 +55,19 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
   const filteredEmployees = employees.filter((emp) =>
     [emp.fullName, emp.employeeId, emp.email, emp.department]
       .filter(Boolean)
-      .some((field) => field.toLowerCase().includes(search.toLowerCase()))
+      .some((field) =>
+        field.toLowerCase().includes(search.toLowerCase())
+      )
   );
 
   return (
     <div className="z-50 fixed inset-0 flex justify-center items-center bg-black/20 backdrop-blur-sm p-4">
       <div className="bg-white/90 shadow-2xl backdrop-blur-lg border border-black/10 rounded-3xl w-full max-w-lg overflow-hidden animate-fadeIn">
-        {/* Header */}
         <div className="p-6 border-gray-200 border-b">
           <h2 className="font-semibold text-gray-900 text-lg">Add Manual Attendance</h2>
           <p className="text-gray-600 text-sm">Record attendance for an employee</p>
         </div>
 
-        {/* Scrollable Body */}
         <div className="p-6 max-h-96 overflow-y-auto">
           {error && (
             <div className="bg-red-50 mb-4 px-3 py-2 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -78,7 +76,6 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Employee Search */}
             <div>
               <label className="block mb-1 font-medium text-gray-700 text-xs">Employee *</label>
               <input
@@ -108,7 +105,6 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
               </select>
             </div>
 
-            {/* Date */}
             <div>
               <label className="block mb-1 font-medium text-gray-700 text-xs">Date *</label>
               <input
@@ -121,7 +117,6 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
               />
             </div>
 
-            {/* In/Out Time */}
             <div className="gap-3 grid grid-cols-2">
               <div>
                 <label className="block mb-1 font-medium text-gray-700 text-xs">In Time</label>
@@ -145,7 +140,6 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
               </div>
             </div>
 
-            {/* Status */}
             <div>
               <label className="block mb-1 font-medium text-gray-700 text-xs">Status *</label>
               <select
@@ -162,19 +156,17 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
               </select>
             </div>
 
-            {/* Late */}
             <div className="flex items-center">
               <input
                 type="checkbox"
                 name="isLate"
                 checked={formData.isLate}
                 onChange={handleChange}
-                className="border-gray-300 rounded w-4 h-4 text-indigo-600"
+                className="border-gray-300 rounded w-4 h-4 text-indigo-600 cursor-pointer"
               />
               <label className="ml-2 text-gray-700 text-xs">Mark as Late</label>
             </div>
 
-            {/* Remarks */}
             <div>
               <label className="block mb-1 font-medium text-gray-700 text-xs">Remarks</label>
               <textarea
@@ -189,13 +181,12 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
           </form>
         </div>
 
-        {/* Footer */}
         <div className="flex justify-end gap-3 bg-gray-50/50 p-6 border-gray-200 border-t">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-gray-700 text-xs transition-colors"
+            className="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-gray-700 text-xs transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -203,7 +194,7 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
             type="submit"
             onClick={handleSubmit}
             disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-3 py-1 rounded text-white text-xs transition-colors"
+            className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-3 py-1 rounded text-white text-xs transition-colors cursor-pointer"
           >
             {loading ? "Saving..." : "Add Attendance"}
           </button>

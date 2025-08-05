@@ -40,13 +40,13 @@ export default function EmployeeTable({ employees, loading, onView, onEdit }) {
                 <td className="space-x-2 px-6 py-4 text-sm">
                   <button
                     onClick={() => onView(emp._id)}
-                    className="text-indigo-600 hover:text-indigo-800 text-xs"
+                    className="text-indigo-600 hover:text-indigo-800 text-xs cursor-pointer"
                   >
                     View
                   </button>
                   <button
                     onClick={() => onEdit(emp._id)}
-                    className="text-blue-600 hover:text-blue-800 text-xs"
+                    className="text-blue-600 hover:text-blue-800 text-xs cursor-pointer"
                   >
                     Edit
                   </button>

@@ -46,14 +46,11 @@ const Register = () => {
         password,
       });
 
-      // ✅ Fix: Access `data.token`, not `res.data.token`
       const { token, ...userData } = res.data.data;
 
-      // ✅ Save to localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(userData));
 
-      // ✅ Redirect to dashboard
       navigate("/", { replace: true });
     } catch (err) {
       setError(
@@ -186,7 +183,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-4 py-2.5 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 w-full font-medium text-white text-sm transition-colors duration-200 disabled:cursor-not-allowed"
+              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-4 py-2.5 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 w-full font-medium text-white text-sm transition-colors duration-200 cursor-pointer disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
@@ -225,7 +222,7 @@ const Register = () => {
             Already have an account?{" "}
             <Link
               to="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-150"
+              className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-150 cursor-pointer"
             >
               Sign in
             </Link>

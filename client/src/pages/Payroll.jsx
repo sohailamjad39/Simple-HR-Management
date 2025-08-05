@@ -30,7 +30,6 @@ const Payroll = () => {
     return [];
   });
 
-  // ✅ Fetch fresh data in background
   const fetchFreshEmployees = async () => {
     try {
       const res = await api.get("/employees");
@@ -43,11 +42,9 @@ const Payroll = () => {
       );
     } catch (err) {
       console.error("Failed to load employees", err);
-      // ✅ Keep showing cached data if API fails
     }
   };
 
-  // ✅ Load cached data on mount, then fetch fresh
   useEffect(() => {
     const saved = localStorage.getItem(CACHE_KEY);
     if (saved) {
@@ -61,11 +58,9 @@ const Payroll = () => {
       }
     }
 
-    // ✅ Always fetch fresh data in background
     fetchFreshEmployees();
   }, []);
 
-  // ✅ Listen for global updates (e.g., new employee added)
   useEffect(() => {
     const handleRefresh = () => {
       fetchFreshEmployees();
@@ -109,7 +104,7 @@ const Payroll = () => {
                     key={tab}
                     type="button"
                     onClick={() => setActiveTab(tab)}
-                    className={`px-4 py-2 font-medium text-sm capitalize transition-colors ${
+                    className={`px-4 py-2 font-medium text-sm capitalize cursor-pointer transition-colors ${
                       activeTab === tab
                         ? "text-indigo-600 border-b-2 border-indigo-600"
                         : "text-gray-500 hover:text-gray-700"

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import api from "../../services/api";
 import SuccessToast from "../SuccessToast";
 import ErrorToast from "../ErrorToast";
-import ConfirmModal from "../ConfirmModal"; // Reusable confirmation
+import ConfirmModal from "../ConfirmModal";
 
 const DEPARTMENTS_CACHE_KEY = "settings_departments_cache";
 const DESIGNATIONS_CACHE_KEY = "settings_designations_cache";
@@ -41,7 +41,6 @@ export default function DepartmentManager() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
 
-  // ✅ Fetch fresh data in background
   const fetchFreshData = async () => {
     try {
       const [deptRes, desigRes] = await Promise.all([
@@ -62,13 +61,10 @@ export default function DepartmentManager() {
     }
   };
 
-  // ✅ Load cached data on mount, then fetch fresh
   useEffect(() => {
-    // Use cached data instantly
     fetchFreshData();
   }, []);
 
-  // ✅ Listen for global updates (e.g., from other settings)
   useEffect(() => {
     const handleRefresh = () => {
       fetchFreshData();
@@ -84,7 +80,6 @@ export default function DepartmentManager() {
     setMessage(msg);
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);
-    // ✅ Notify global system
     window.dispatchEvent(new Event("data-updated"));
   };
 
@@ -120,7 +115,7 @@ export default function DepartmentManager() {
 
   return (
     <>
-      {/* ✅ Success & Error Toasts */}
+      {/* Toasts */}
       {showSuccess && (
         <SuccessToast message={message} onClose={() => setShowSuccess(false)} />
       )}
@@ -145,6 +140,7 @@ export default function DepartmentManager() {
           onSuccess={handleSuccess}
           onError={handleError}
           onDelete={handleDelete}
+          departments={departments} // Pass for designation form
         />
         <Section
           title="Designations"
@@ -154,6 +150,7 @@ export default function DepartmentManager() {
           onSuccess={handleSuccess}
           onError={handleError}
           onDelete={handleDelete}
+          departments={departments}
         />
       </div>
     </>
@@ -168,19 +165,30 @@ function Section({
   onSuccess,
   onError,
   onDelete,
+  departments = [],
 }) {
   const [name, setName] = useState("");
+  const [department, setDepartment] = useState(""); // ✅ For designation
+  const [level, setLevel] = useState("Mid"); // Optional level
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState("");
+  const [editDepartment, setEditDepartment] = useState(""); // ✅ Edit mode
+  const [editLevel, setEditLevel] = useState("Mid");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editId) {
-        const res = await api.put(`/settings/${type}s/${editId}`, {
+        const payload = {
           [type === "department" ? "name" : "title"]: editName,
-        });
+        };
 
+        if (type === "designation") {
+          payload.department = editDepartment;
+          payload.level = editLevel;
+        }
+
+        const res = await api.put(`/settings/${type}s/${editId}`, payload);
         onUpdate((prev) =>
           prev.map((i) => (i._id === editId ? res.data.data : i))
         );
@@ -190,14 +198,24 @@ function Section({
         const payload = {
           [type === "department" ? "name" : "title"]: name,
         };
+
         if (type === "designation") {
-          payload.department = null;
-          payload.level = "Mid";
+          if (!department) {
+            onError("Please select a department for this designation");
+            return;
+          }
+          payload.department = department;
+          payload.level = level;
         }
 
         const res = await api.post(`/settings/${type}s`, payload);
         onUpdate((prev) => [...prev, res.data.data]);
+        // Reset form
         setName("");
+        if (type === "designation") {
+          setDepartment("");
+          setLevel("Mid");
+        }
         onSuccess(`${title.slice(0, -1)} added successfully!`);
       }
     } catch (err) {
@@ -216,25 +234,70 @@ function Section({
       </div>
 
       <div className="p-6">
-        <form onSubmit={handleSubmit} className="flex gap-3 mb-6">
-          <input
-            type="text"
-            value={editId ? editName : name}
-            onChange={(e) =>
-              editId
-                ? setEditName(e.target.value)
-                : setName(e.target.value)
-            }
-            placeholder={`New ${type} name`}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-            required
-          />
-          <button
-            type="submit"
-            className="bg-indigo-600 px-4 py-2 rounded-lg text-white"
-          >
-            {editId ? "Update" : "Add"}
-          </button>
+        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+          {/* Name Input */}
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={editId ? editName : name}
+              onChange={(e) =>
+                editId
+                  ? setEditName(e.target.value)
+                  : setName(e.target.value)
+              }
+              placeholder={`New ${type} name`}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+              required
+            />
+
+            {/* Department Dropdown (Only for Designation) */}
+            {type === "designation" && (
+              <>
+                <select
+                  value={editId ? editDepartment : department}
+                  onChange={(e) =>
+                    editId
+                      ? setEditDepartment(e.target.value)
+                      : setDepartment(e.target.value)
+                  }
+                  className="px-3 py-2 border border-gray-300 rounded-lg min-w-40"
+                  required
+                >
+                  <option value="">Select Department</option>
+                  {departments.map((dept) => (
+                    <option key={dept._id} value={dept._id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={editId ? editLevel : level}
+                  onChange={(e) =>
+                    editId
+                      ? setEditLevel(e.target.value)
+                      : setLevel(e.target.value)
+                  }
+                  className="px-3 py-2 border border-gray-300 rounded-lg min-w-32"
+                >
+                  <option value="Junior">Junior</option>
+                  <option value="Mid">Mid</option>
+                  <option value="Senior">Senior</option>
+                  <option value="Lead">Lead</option>
+                </select>
+              </>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-white cursor-pointer"
+            >
+              {editId ? "Update" : "Add"}
+            </button>
+          </div>
         </form>
 
         {validItems.length === 0 ? (
@@ -248,6 +311,16 @@ function Section({
                 <th className="px-6 py-3 font-medium text-gray-500 text-xs uppercase">
                   Name
                 </th>
+                {type === "designation" && (
+                  <>
+                    <th className="px-6 py-3 font-medium text-gray-500 text-xs uppercase">
+                      Department
+                    </th>
+                    <th className="px-6 py-3 font-medium text-gray-500 text-xs uppercase">
+                      Level
+                    </th>
+                  </>
+                )}
                 <th className="px-6 py-3 font-medium text-gray-500 text-xs uppercase">
                   Actions
                 </th>
@@ -256,16 +329,38 @@ function Section({
             <tbody className="divide-y divide-gray-200">
               {validItems.map((item) => (
                 <tr key={item._id}>
-                  <td className="px-6 py-4">
-                    {item.name || item.title}
-                  </td>
+                  <td className="px-6 py-4">{item.name || item.title}</td>
+                  {type === "designation" && (
+                    <>
+                      <td className="px-6 py-4">
+                        {item.department?.name || "No Department"}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            item.level === "Senior" || item.level === "Lead"
+                              ? "bg-red-100 text-red-800"
+                              : item.level === "Mid"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {item.level}
+                        </span>
+                      </td>
+                    </>
+                  )}
                   <td className="space-x-2 px-6 py-4 text-sm">
                     <button
                       onClick={() => {
                         setEditId(item._id);
                         setEditName(item.name || item.title);
+                        if (type === "designation") {
+                          setEditDepartment(item.department?._id || "");
+                          setEditLevel(item.level || "Mid");
+                        }
                       }}
-                      className="text-blue-600 hover:text-blue-800"
+                      className="text-blue-600 hover:text-blue-800 cursor-pointer"
                     >
                       Edit
                     </button>
@@ -273,7 +368,7 @@ function Section({
                       onClick={() =>
                         onDelete(item._id, type, item.name || item.title)
                       }
-                      className="text-red-600 hover:text-red-800"
+                      className="text-red-600 hover:text-red-800 cursor-pointer"
                     >
                       Delete
                     </button>

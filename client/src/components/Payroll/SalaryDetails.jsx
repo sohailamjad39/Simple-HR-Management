@@ -35,13 +35,11 @@ export default function SalaryDetails({ employeeId }) {
       );
     } catch (err) {
       console.error("Failed to load salary details", err);
-      // ✅ Keep showing cached data
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Load cached data on mount, then fetch fresh
   useEffect(() => {
     if (!employeeId) return;
 
@@ -55,11 +53,9 @@ export default function SalaryDetails({ employeeId }) {
       }
     }
 
-    // ✅ Always fetch fresh data in background
     fetchFreshData();
   }, [employeeId]);
 
-  // ✅ Listen for global updates (e.g., salary config changed)
   useEffect(() => {
     if (!employeeId) return;
 

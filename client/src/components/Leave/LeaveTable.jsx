@@ -58,7 +58,7 @@ export default function LeaveTable({ leaves, loading, onEdit, onDelete }) {
               <td className="space-x-2 px-6 py-4 text-sm">
                 <button
                   onClick={() => onEdit(leave)}
-                  className="text-blue-600 hover:text-blue-800 text-xs"
+                  className="text-blue-600 hover:text-blue-800 text-xs cursor-pointer"
                 >
                   Edit
                 </button>
@@ -69,7 +69,7 @@ export default function LeaveTable({ leaves, loading, onEdit, onDelete }) {
                       leave.employee?.fullName || "this employee"
                     )
                   }
-                  className="text-red-600 hover:text-red-800 text-xs"
+                  className="text-red-600 hover:text-red-800 text-xs cursor-pointer"
                 >
                   Delete
                 </button>

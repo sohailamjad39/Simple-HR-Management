@@ -27,14 +27,14 @@ const Logout = () => {
             <button
               type="button"
               onClick={handleCancel}
-              className="bg-gray-100 hover:bg-gray-200 px-5 py-2 rounded-lg font-medium text-gray-700 text-sm transition-all"
+              className="bg-gray-100 hover:bg-gray-200 px-5 py-2 rounded-lg font-medium text-gray-700 text-sm transition-all cursor-pointer"
             >
               No, Stay
             </button>
             <button
               type="button"
               onClick={handleConfirm}
-              className="bg-indigo-600 hover:bg-indigo-700 px-5 py-2 rounded-lg font-medium text-white text-sm transition-all"
+              className="bg-indigo-600 hover:bg-indigo-700 px-5 py-2 rounded-lg font-medium text-white text-sm transition-all cursor-pointer"
             >
               Yes, Log Out
             </button>

@@ -11,8 +11,6 @@ export default function MonthlyReport({ month, setMonth }) {
     if (saved) {
       try {
         const { data, month: cachedMonth } = JSON.parse(saved);
-        // Optional: only reuse if same month
-        // Otherwise, just show something while fresh loads
         if (cachedMonth === month) {
           return Array.isArray(data) ? data : [];
         }
@@ -26,7 +24,6 @@ export default function MonthlyReport({ month, setMonth }) {
   const [loading, setLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
 
-  // ✅ Fetch fresh data in background
   const fetchFreshData = async () => {
     setLoading(true);
     const [year, m] = month.split("-");
@@ -35,20 +32,17 @@ export default function MonthlyReport({ month, setMonth }) {
       const data = Array.isArray(res.data.data?.data) ? res.data.data.data : [];
 
       setReport(data);
-      // ✅ Update cache
       localStorage.setItem(
         CACHE_KEY,
         JSON.stringify({ data, month, timestamp: Date.now() })
       );
     } catch (err) {
       console.error("Failed to load monthly report", err);
-      // ✅ Keep showing cached data
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Load cached data on mount, then fetch fresh
   useEffect(() => {
     const saved = localStorage.getItem(CACHE_KEY);
     if (saved) {
@@ -62,11 +56,9 @@ export default function MonthlyReport({ month, setMonth }) {
       }
     }
 
-    // ✅ Always fetch fresh data in background
     fetchFreshData();
   }, [month]);
 
-  // ✅ Listen for global updates (e.g., after add/edit attendance)
   useEffect(() => {
     const handleRefresh = () => {
       fetchFreshData();
@@ -102,7 +94,7 @@ export default function MonthlyReport({ month, setMonth }) {
         <button
           onClick={handleExport}
           disabled={exportLoading || report.length === 0}
-          className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 px-4 py-2 rounded-lg font-medium text-white text-sm transition-colors"
+          className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 px-4 py-2 rounded-lg font-medium text-white text-sm transition-colors cursor-pointer"
         >
           {exportLoading ? "Generating..." : "Download CSV"}
         </button>

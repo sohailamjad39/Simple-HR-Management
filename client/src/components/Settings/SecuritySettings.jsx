@@ -108,7 +108,7 @@ export default function SecuritySettings() {
             <button
               type="submit"
               disabled={loading}
-              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-6 py-2 rounded-lg font-medium text-white transition-colors"
+              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-6 py-2 rounded-lg font-medium text-white transition-colors cursor-pointer"
             >
               {loading ? "Updating..." : "Change Password"}
             </button>

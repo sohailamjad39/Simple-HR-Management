@@ -62,7 +62,7 @@ const Profile = () => {
             <h1 className="font-bold text-gray-900 text-2xl">My Profile</h1>
             <button
               onClick={() => setShowEdit(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-medium text-white transition-colors"
+              className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-medium text-white transition-colors cursor-pointer"
             >
               Edit Profile
             </button>

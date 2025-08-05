@@ -4,7 +4,6 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import DepartmentManager from "../components/Settings/DepartmentManager";
 import LeaveTypeManager from "../components/Settings/LeaveTypeManager";
-import AttendanceRules from "../components/Settings/AttendanceRules";
 import SalaryConfig from "../components/Settings/SalaryConfig";
 import SecuritySettings from "../components/Settings/SecuritySettings";
 import api from "../services/api";
@@ -15,7 +14,6 @@ const Settings = () => {
   const tabs = [
     { id: "departments", label: "Departments & Roles" },
     { id: "leave", label: "Leave Types" },
-    { id: "attendance", label: "Attendance Rules" },
     { id: "salary", label: "Salary Config" },
     { id: "security", label: "Password & Security" },
   ];
@@ -34,7 +32,7 @@ const Settings = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 font-medium capitalize transition-colors ${
+                className={`px-4 py-2 font-medium capitalize cursor-pointer transition-colors ${
                   activeTab === tab.id
                     ? "text-indigo-600 border-b-2 border-indigo-600"
                     : "text-gray-500 hover:text-gray-700"
@@ -49,7 +47,6 @@ const Settings = () => {
           <div>
             {activeTab === "departments" && <DepartmentManager />}
             {activeTab === "leave" && <LeaveTypeManager />}
-            {activeTab === "attendance" && <AttendanceRules />}
             {activeTab === "salary" && <SalaryConfig />}
             {activeTab === "security" && <SecuritySettings />}
           </div>

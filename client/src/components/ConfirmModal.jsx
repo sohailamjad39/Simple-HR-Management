@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 
 export default function ConfirmModal({ isOpen, title = "Confirm Action", message, onConfirm, onCancel }) {
-  // ✅ Close on Escape key
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") onCancel();
@@ -17,10 +16,8 @@ export default function ConfirmModal({ isOpen, title = "Confirm Action", message
     };
   }, [isOpen, onCancel]);
 
-  // ✅ Don't render if not open
   if (!isOpen) return null;
 
-  // ✅ Prevent background scroll
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -35,11 +32,11 @@ export default function ConfirmModal({ isOpen, title = "Confirm Action", message
   return (
     <div
       className="z-50 fixed inset-0 flex justify-center items-center bg-black/20 backdrop-blur-sm"
-      onClick={onCancel} // Close on backdrop click
+      onClick={onCancel} 
     >
       <div
         className="bg-white/95 shadow-2xl backdrop-blur-lg border border-black/10 rounded-3xl w-full max-w-md overflow-hidden animate-fadeIn"
-        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+        onClick={(e) => e.stopPropagation()} 
       >
         <div className="p-6">
           <h3 className="font-semibold text-gray-900 text-lg">{title}</h3>

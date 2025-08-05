@@ -119,7 +119,7 @@ export default function EditAttendanceModal({
                 name="isLate"
                 checked={formData.isLate}
                 onChange={handleChange}
-                className="border-gray-300 rounded w-4 h-4 text-indigo-600"
+                className="border-gray-300 rounded w-4 h-4 text-indigo-600 cursor-pointer"
               />
               <label className="ml-2 text-gray-700 text-sm">Mark as Late</label>
             </div>
@@ -145,14 +145,14 @@ export default function EditAttendanceModal({
                 type="button"
                 onClick={onClose}
                 disabled={loading}
-                className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-gray-700 text-sm transition-colors"
+                className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-gray-700 text-sm transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-4 py-2 rounded-lg font-medium text-white text-sm transition-colors"
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-4 py-2 rounded-lg font-medium text-white text-sm transition-colors cursor-pointer"
               >
                 {loading ? "Updating..." : "Update"}
               </button>

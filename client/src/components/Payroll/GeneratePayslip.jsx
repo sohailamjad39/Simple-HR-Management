@@ -221,14 +221,14 @@ export default function GeneratePayslip({ employee }) {
             <button
               type="button"
               onClick={downloadPayslip}
-              className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-gray-700 transition-colors"
+              className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-gray-700 transition-colors cursor-pointer"
             >
               Download CSV
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-4 py-2 rounded-lg font-medium text-white transition-colors"
+              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-4 py-2 rounded-lg font-medium text-white transition-colors cursor-pointer"
             >
               {loading ? "Generating..." : "Generate Payslip"}
             </button>

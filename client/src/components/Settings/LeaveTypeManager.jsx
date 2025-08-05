@@ -26,7 +26,6 @@ export default function LeaveTypeManager() {
   const [showError, setShowError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
 
-  // ✅ Fetch fresh data in background
   const fetchFreshData = async () => {
     try {
       const res = await api.get("/settings/leave-types");
@@ -36,11 +35,9 @@ export default function LeaveTypeManager() {
       localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
     } catch (err) {
       console.error("Failed to load leave types", err);
-      // ✅ Keep showing cached data
     }
   };
 
-  // ✅ Load cached data on mount, then fetch fresh
   useEffect(() => {
     const saved = localStorage.getItem(CACHE_KEY);
     if (saved) {
@@ -54,11 +51,9 @@ export default function LeaveTypeManager() {
       }
     }
 
-    // ✅ Always fetch fresh data in background
     fetchFreshData();
   }, []);
 
-  // ✅ Listen for global updates (e.g., new leave type added)
   useEffect(() => {
     const handleRefresh = () => {
       fetchFreshData();
@@ -84,7 +79,6 @@ export default function LeaveTypeManager() {
       setForm({ name: "", daysPerYear: 12, paid: true, carryForward: false });
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
-      // ✅ Notify global system
       window.dispatchEvent(new Event("data-updated"));
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Failed to add leave type";
@@ -99,7 +93,6 @@ export default function LeaveTypeManager() {
       setTypes((prev) => prev.filter((t) => t._id !== id));
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
-      // ✅ Notify global system
       window.dispatchEvent(new Event("data-updated"));
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Failed to delete leave type";
@@ -112,7 +105,7 @@ export default function LeaveTypeManager() {
 
   return (
     <>
-      {/* ✅ Success & Error Toasts */}
+      {/* Success & Error Toasts */}
       {showSuccess && (
         <SuccessToast
           message="Leave type added successfully!"
@@ -167,7 +160,7 @@ export default function LeaveTypeManager() {
               />
               Paid
             </label>
-            <button type="submit" className="bg-indigo-600 px-4 py-2 rounded-lg text-white">
+            <button type="submit" className="bg-indigo-600 px-4 py-2 rounded-lg text-white cursor-pointer">
               Add
             </button>
           </form>
@@ -195,7 +188,7 @@ export default function LeaveTypeManager() {
                     <td className="px-6 py-4 text-sm">
                       <button
                         onClick={() => setConfirmDelete({ id: t._id, name: t.name })}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 cursor-pointer"
                       >
                         Delete
                       </button>

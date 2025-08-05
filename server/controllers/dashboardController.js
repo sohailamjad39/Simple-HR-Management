@@ -3,9 +3,8 @@ import asyncHandler from "express-async-handler";
 import Employee from "../models/Employee.js";
 import Leave from "../models/Leave.js";
 import JobOpening from "../models/JobOpening.js";
-import Payroll from "../models/Payroll.js"; // assuming you have this
+import Payroll from "../models/Payroll.js";
 import HR from "../models/HR.js";
-import User from "../models/HR.js"; // same as HR
 
 // Helper: Format time ago (e.g., "2 min ago")
 const timeAgo = (date) => {
@@ -15,6 +14,7 @@ const timeAgo = (date) => {
   const diffInMin = Math.floor(diffInSec / 60);
   const diffInHr = Math.floor(diffInMin / 60);
   const diffInDay = Math.floor(diffInHr / 24);
+  const diffInWeek = Math.floor(diffInDay / 7);
 
   if (diffInSec < 60) return "Just now";
   if (diffInMin < 60) return `${diffInMin} min ago`;
@@ -81,44 +81,54 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
       .limit(5)
       .select("fullName lastLogin");
 
-    // 6. Attendance marked (you can enhance this if you have a log)
-    // For now, we'll use Payroll or Leave as proxy, or skip
-
-    // ✅ Combine all events into one activity stream
+    // Build safe activity list
     const activities = [
+      // ✅ New employees
       ...newEmployees.map((emp) => ({
-        action: `New employee added: ${emp.fullName}`,
+        action: `New employee added: ${emp.fullName || "Unknown"}`,
         user: "HR Team",
         time: timeAgo(emp.createdAt),
         timestamp: emp.createdAt,
       })),
-      ...approvedLeaves.map((leave) => ({
-        action: `Leave approved for ${leave.employee.fullName}`,
-        user: leave.approvedBy?.fullName || "System",
-        time: timeAgo(leave.createdAt),
-        timestamp: leave.createdAt,
-      })),
+
+      // ✅ Approved leaves (safe)
+      ...approvedLeaves
+        .filter((leave) => leave.employee) // Skip if employee is missing
+        .map((leave) => ({
+          action: `Leave approved for ${leave.employee.fullName || "Unknown"}`,
+          user: leave.approvedBy?.fullName || "System",
+          time: timeAgo(leave.createdAt),
+          timestamp: leave.createdAt,
+        })),
+
+      // ✅ New jobs
       ...newJobs.map((job) => ({
         action: `Job posted: ${job.title}`,
         user: "HR Team",
         time: timeAgo(job.createdAt),
         timestamp: job.createdAt,
       })),
-      ...paidPayrolls.map((pay) => ({
-        action: `Payslip generated for ${pay.employee.fullName}`,
-        user: pay.generatedBy?.fullName || "System",
-        time: timeAgo(pay.createdAt),
-        timestamp: pay.createdAt,
-      })),
+
+      // ✅ Payslips generated (safe)
+      ...paidPayrolls
+        .filter((pay) => pay.employee) // Skip if employee is missing
+        .map((pay) => ({
+          action: `Payslip generated for ${pay.employee.fullName || "Unknown"}`,
+          user: pay.generatedBy?.fullName || "System",
+          time: timeAgo(pay.createdAt),
+          timestamp: pay.createdAt,
+        })),
+
+      // ✅ HR logins
       ...activeHRs.map((hr) => ({
         action: "Logged in",
-        user: hr.fullName,
+        user: hr.fullName || "Unknown HR",
         time: timeAgo(hr.lastLogin),
         timestamp: hr.lastLogin,
       })),
     ];
 
-    // ✅ Sort by timestamp, take latest 6
+    // Sort by timestamp and limit to 6
     const recentActivity = activities
       .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
       .slice(0, 6);

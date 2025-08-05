@@ -36,13 +36,11 @@ export default function PayslipHistory({ employeeId }) {
       );
     } catch (err) {
       console.error("Failed to load payslip history", err);
-      // ✅ Keep showing cached data
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Load cached data on mount, then fetch fresh
   useEffect(() => {
     if (!employeeId) return;
 
@@ -58,11 +56,9 @@ export default function PayslipHistory({ employeeId }) {
       }
     }
 
-    // ✅ Always fetch fresh data in background
     fetchFreshData();
   }, [employeeId]);
 
-  // ✅ Listen for global updates (e.g., new payslip generated)
   useEffect(() => {
     if (!employeeId) return;
 
@@ -105,7 +101,7 @@ export default function PayslipHistory({ employeeId }) {
             })),
             "payslip-history"
           )}
-          className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-medium text-white text-sm"
+          className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-medium text-white text-sm cursor-pointer"
         >
           Export All
         </button>
@@ -146,7 +142,7 @@ export default function PayslipHistory({ employeeId }) {
                 <td className="px-6 py-4 text-sm">
                   <button
                     onClick={() => handleExport(h)}
-                    className="text-indigo-600 hover:text-indigo-800 text-xs"
+                    className="text-indigo-600 hover:text-indigo-800 text-xs cursor-pointer"
                   >
                     Download
                   </button>

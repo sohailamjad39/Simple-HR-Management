@@ -204,44 +204,20 @@ export default function EditProfileModal({ hr, onClose, onSuccess }) {
               </div>
             </div>
 
-            {/* Metadata (Dynamic Fields) */}
-            <div className="pt-4 border-t">
-              <h3 className="mb-3 font-medium text-gray-900">Additional Info</h3>
-              <div className="space-y-3">
-                {Object.keys(formData.metadata).map((key) => (
-                  <div key={key} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={key}
-                      disabled
-                      className="flex-1 bg-gray-50 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                    />
-                    <input
-                      type="text"
-                      value={formData.metadata[key]}
-                      onChange={(e) => handleMetadataChange(key, e.target.value)}
-                      placeholder="Value"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={loading}
-                className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-gray-700 text-sm transition-colors"
+                className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-gray-700 text-sm transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-4 py-2 rounded-lg font-medium text-white text-sm transition-colors"
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-4 py-2 rounded-lg font-medium text-white text-sm transition-colors cursor-pointer"
               >
                 {loading ? "Saving..." : "Save Changes"}
               </button>
