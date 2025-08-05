@@ -12,7 +12,13 @@ import DashboardLayout from "../components/Dashboard/DashboardLayout";
 
 // Icons
 const UsersIcon = (
-  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-6 h-6"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -23,7 +29,13 @@ const UsersIcon = (
 );
 
 const ClockIcon = (
-  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-6 h-6"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -34,7 +46,13 @@ const ClockIcon = (
 );
 
 const BriefcaseIcon = (
-  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-6 h-6"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -45,7 +63,13 @@ const BriefcaseIcon = (
 );
 
 const AddIcon = (
-  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-5 h-5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -56,7 +80,13 @@ const AddIcon = (
 );
 
 const CalendarIcon = (
-  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-5 h-5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -67,7 +97,13 @@ const CalendarIcon = (
 );
 
 const DocumentIcon = (
-  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-5 h-5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -77,62 +113,74 @@ const DocumentIcon = (
   </svg>
 );
 
+const CACHE_KEY = "dashboard_cached_data";
+
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({
-    totalEmployees: 0,
-    activeInactive: { active: 0, inactive: 0 },
-    upcomingLeaves: 0,
-    vacantPositions: 0,
-    urgentVacancies: 0,
-    recentActivity: [],
+  const [stats, setStats] = useState(() => {
+    const saved = localStorage.getItem(CACHE_KEY);
+    return saved
+      ? JSON.parse(saved)
+      : {
+          totalEmployees: 0,
+          activeInactive: { active: 0, inactive: 0 },
+          upcomingLeaves: 0,
+          vacantPositions: 0,
+          urgentVacancies: 0,
+          recentActivity: [],
+          newThisWeek: 0,
+          leavesThisWeek: 0,
+        };
   });
-  const [loading, setLoading] = useState(true);
+
+  const [loading, setLoading] = useState(false);
+
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/dashboard/stats");
+      if (res.data.success && res.data.data) {
+        setStats(res.data.data);
+        localStorage.setItem(CACHE_KEY, JSON.stringify(res.data.data));
+      }
+    } catch (err) {
+      console.error("Failed to load dashboard data", err);
+      if (err.response?.status === 401) {
+        navigate("/login", { replace: true });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await api.get("/dashboard/stats");
-        // ✅ Ensure data shape is correct
-        if (res.data.success && res.data.data) {
-          setStats(res.data.data);
-        } else {
-          console.error("Invalid dashboard data", res.data);
-        }
-      } catch (err) {
-        console.error("Failed to load dashboard data", err);
-        if (err.response?.status === 401) {
-          navigate("/login", { replace: true });
-        }
-      } finally {
-        setLoading(false);
-      }
+    const saved = localStorage.getItem(CACHE_KEY);
+    if (saved) {
+      setStats(JSON.parse(saved));
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = (e) => {
+      console.log("Event caught:", e);
+      fetchStats();
     };
+    window.addEventListener("data-updated", handler);
+    return () => window.removeEventListener("data-updated", handler);
+  }, []);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(CACHE_KEY);
+    if (saved) setStats(JSON.parse(saved));
 
     fetchStats();
-  }, [navigate]);
+  }, []);
 
   const quickActions = [
     { label: "Add Employee", icon: AddIcon, path: "/employees/add" },
-    {
-      label: "Schedule Interview",
-      icon: CalendarIcon,
-      path: "/recruitment/interviews",
-    },
-    {
-      label: "Post Job Opening",
-      icon: DocumentIcon,
-      path: "/recruitment/jobs",
-    },
+    { label: "Mark Attendance", icon: CalendarIcon, path: "/attendance" },
+    { label: "Manage Payroll", icon: DocumentIcon, path: "/payroll" },
   ];
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-gray-500">Loading dashboard...</div>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -141,14 +189,24 @@ const Dashboard = () => {
         <Sidebar />
 
         <div className="mx-auto p-6 pt-20 max-w-7xl">
-          <h1 className="mb-6 font-bold text-gray-900 text-2xl">Dashboard</h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="font-bold text-gray-900 text-2xl">Dashboard</h1>
+            <button
+              onClick={fetchStats}
+              disabled={loading}
+              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-4 py-2 rounded-lg text-white text-sm"
+            >
+              {loading ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
 
-          {/* Overview Cards */}
           <DashboardLayout>
             <OverviewCard
               title="Total Employees"
               value={stats.totalEmployees}
-              subtitle="+5 new this month"
+              subtitle={
+                stats.newThisWeek > 0 ? `+${stats.newThisWeek} this week` : ""
+              }
               icon={UsersIcon}
             />
             <OverviewCard
@@ -160,24 +218,26 @@ const Dashboard = () => {
             <OverviewCard
               title="Upcoming Leaves"
               value={stats.upcomingLeaves}
-              subtitle="Next: 2 days from now"
+              subtitle={
+                stats.leavesThisWeek > 0
+                  ? `${stats.leavesThisWeek} this week`
+                  : ""
+              }
               icon={ClockIcon}
-            />
-            <OverviewCard
-              title="Vacant Positions"
-              value={stats.vacantPositions}
-              subtitle={`${stats.urgentVacancies} urgent`}
-              icon={BriefcaseIcon}
             />
           </DashboardLayout>
 
-          {/* Recent Activity + Quick Actions */}
           <div className="gap-6 grid grid-cols-1 lg:grid-cols-2 mt-8">
             <div className="bg-white/70 shadow-sm backdrop-blur-sm p-6 border border-gray-100 rounded-2xl">
-              <h3 className="mb-4 font-semibold text-gray-900 text-lg">Recent Activity</h3>
+              <h3 className="mb-4 font-semibold text-gray-900 text-lg">
+                Recent Activity
+              </h3>
               <div className="space-y-4">
                 {stats.recentActivity.map((act, i) => (
-                  <div key={i} className="flex justify-between items-center text-gray-700 text-sm">
+                  <div
+                    key={i}
+                    className="flex justify-between items-center text-gray-700 text-sm"
+                  >
                     <div>
                       <p>{act.action}</p>
                       <p className="text-gray-500">{act.user}</p>
@@ -189,7 +249,9 @@ const Dashboard = () => {
             </div>
 
             <div className="bg-white/70 shadow-sm backdrop-blur-sm p-6 border border-gray-100 rounded-2xl">
-              <h3 className="mb-4 font-semibold text-gray-900 text-lg">Quick Actions</h3>
+              <h3 className="mb-4 font-semibold text-gray-900 text-lg">
+                Quick Actions
+              </h3>
               <div className="space-y-3">
                 {quickActions.map((action, i) => (
                   <QuickAction

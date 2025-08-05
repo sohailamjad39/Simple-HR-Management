@@ -7,9 +7,7 @@ const menuItems = [
   { name: "Employee Management", path: "/employees" },
   { name: "Leave Management", path: "/leaves" },
   { name: "Attendance Tracking", path: "/attendance" },
-  { name: "Recruitment Module", path: "/recruitment" },
   { name: "Payroll Management", path: "/payroll" },
-  { name: "Document Management", path: "/documents" },
 ];
 
 const Sidebar = () => {

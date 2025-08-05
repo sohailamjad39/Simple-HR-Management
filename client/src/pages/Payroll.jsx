@@ -11,23 +11,70 @@ import GeneratePayslip from "../components/Payroll/GeneratePayslip";
 import PayslipHistory from "../components/Payroll/PayslipHistory";
 import EmployeeSearch from "../components/Payroll/EmployeeSearch";
 
+const CACHE_KEY = "payroll_employees_cache";
+
 const Payroll = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("salary");
   const [employee, setEmployee] = useState(null);
-  const [employees, setEmployees] = useState([]);
-
-  // Fetch employees
-  useEffect(() => {
-    const fetchEmployees = async () => {
+  const [employees, setEmployees] = useState(() => {
+    const saved = localStorage.getItem(CACHE_KEY);
+    if (saved) {
       try {
-        const res = await api.get("/employees");
-        setEmployees(res.data.data || []);
-      } catch (err) {
-        console.error("Failed to load employees");
+        const { data } = JSON.parse(saved);
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        console.warn("Failed to parse cached payroll employees", e);
       }
+    }
+    return [];
+  });
+
+  // ✅ Fetch fresh data in background
+  const fetchFreshEmployees = async () => {
+    try {
+      const res = await api.get("/employees");
+      const data = Array.isArray(res.data.data) ? res.data.data : [];
+
+      setEmployees(data);
+      localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({ data, timestamp: Date.now() })
+      );
+    } catch (err) {
+      console.error("Failed to load employees", err);
+      // ✅ Keep showing cached data if API fails
+    }
+  };
+
+  // ✅ Load cached data on mount, then fetch fresh
+  useEffect(() => {
+    const saved = localStorage.getItem(CACHE_KEY);
+    if (saved) {
+      try {
+        const { data } = JSON.parse(saved);
+        if (Array.isArray(data)) {
+          setEmployees(data);
+        }
+      } catch (e) {
+        console.warn("Failed to read payroll employee cache", e);
+      }
+    }
+
+    // ✅ Always fetch fresh data in background
+    fetchFreshEmployees();
+  }, []);
+
+  // ✅ Listen for global updates (e.g., new employee added)
+  useEffect(() => {
+    const handleRefresh = () => {
+      fetchFreshEmployees();
     };
-    fetchEmployees();
+
+    window.addEventListener("data-updated", handleRefresh);
+    return () => {
+      window.removeEventListener("data-updated", handleRefresh);
+    };
   }, []);
 
   return (

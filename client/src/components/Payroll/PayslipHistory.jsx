@@ -1,55 +1,110 @@
 // client/src/components/Payroll/PayslipHistory.jsx
 import { useState, useEffect } from "react";
 import { exportToCSV } from "../../utils/exportReport";
-
 import api from "../../services/api";
 
-export default function PayslipHistory({ employeeId }) {
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+const CACHE_KEY = (employeeId) => `payslip_history_${employeeId}`;
 
-  useEffect(() => {
-    const fetch = async () => {
-      setLoading(true);
+export default function PayslipHistory({ employeeId }) {
+  const [history, setHistory] = useState(() => {
+    if (!employeeId) return [];
+    const saved = localStorage.getItem(CACHE_KEY(employeeId));
+    if (saved) {
       try {
-        const res = await api.get(`/payroll/history/${employeeId}`);
-        setHistory(res.data.history);
-      } catch (err) {
-        alert("Failed to load history");
-      } finally {
-        setLoading(false);
+        const { data } = JSON.parse(saved);
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        console.warn("Failed to parse cached payslip history", e);
       }
+    }
+    return [];
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const fetchFreshData = async () => {
+    if (!employeeId) return;
+    setLoading(true);
+    try {
+      const res = await api.get(`/payroll/history/${employeeId}`);
+      const data = Array.isArray(res.data.history) ? res.data.history : [];
+
+      setHistory(data);
+      localStorage.setItem(
+        CACHE_KEY(employeeId),
+        JSON.stringify({ data, timestamp: Date.now() })
+      );
+    } catch (err) {
+      console.error("Failed to load payslip history", err);
+      // ✅ Keep showing cached data
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Load cached data on mount, then fetch fresh
+  useEffect(() => {
+    if (!employeeId) return;
+
+    const saved = localStorage.getItem(CACHE_KEY(employeeId));
+    if (saved) {
+      try {
+        const { data } = JSON.parse(saved);
+        if (Array.isArray(data)) {
+          setHistory(data);
+        }
+      } catch (e) {
+        console.warn("Failed to read payslip history cache", e);
+      }
+    }
+
+    // ✅ Always fetch fresh data in background
+    fetchFreshData();
+  }, [employeeId]);
+
+  // ✅ Listen for global updates (e.g., new payslip generated)
+  useEffect(() => {
+    if (!employeeId) return;
+
+    const handleRefresh = () => {
+      fetchFreshData();
     };
-    fetch();
+
+    window.addEventListener("data-updated", handleRefresh);
+    return () => {
+      window.removeEventListener("data-updated", handleRefresh);
+    };
   }, [employeeId]);
 
   const handleExport = (payslip) => {
-    const data = [{
-      Month: new Date(payslip.year, payslip.month - 1).toLocaleDateString('en-US', { month: 'long' }),
-      Year: payslip.year,
-      "Basic Salary": payslip.basicSalary,
-      "Total Allowances": payslip.grossSalary - payslip.basicSalary,
-      "Total Deductions": payslip.grossSalary - payslip.netSalary,
-      "Net Salary": payslip.netSalary,
-      Status: payslip.status,
-    }];
-
+    const data = [
+      {
+        Month: new Date(payslip.year, payslip.month - 1).toLocaleDateString('en-US', { month: 'long' }),
+        Year: payslip.year,
+        "Basic Salary": payslip.basicSalary,
+        "Total Allowances": payslip.grossSalary - payslip.basicSalary,
+        "Total Deductions": payslip.grossSalary - payslip.netSalary,
+        "Net Salary": payslip.netSalary,
+        Status: payslip.status,
+      },
+    ];
     exportToCSV(data, `${payslip.year}-${String(payslip.month).padStart(2, "0")}`);
   };
-
-  if (loading) return <div className="py-8 text-gray-500 text-center">Loading...</div>;
 
   return (
     <div className="bg-white/70 shadow-sm border border-gray-100 rounded-2xl overflow-hidden">
       <div className="flex justify-between items-center p-6 border-gray-200 border-b">
         <h3 className="font-semibold text-gray-900 text-lg">Payslip History</h3>
         <button
-          onClick={() => exportToCSV(history.map(h => ({
-            Month: new Date(h.year, h.month - 1).toLocaleDateString('en-US', { month: 'long' }),
-            Year: h.year,
-            "Net Salary": h.netSalary,
-            Status: h.status,
-          })), "payslip-history")}
+          onClick={() => exportToCSV(
+            history.map(h => ({
+              Month: new Date(h.year, h.month - 1).toLocaleDateString('en-US', { month: 'long' }),
+              Year: h.year,
+              "Net Salary": h.netSalary,
+              Status: h.status,
+            })),
+            "payslip-history"
+          )}
           className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-medium text-white text-sm"
         >
           Export All
@@ -57,7 +112,9 @@ export default function PayslipHistory({ employeeId }) {
       </div>
 
       {history.length === 0 ? (
-        <div className="py-8 text-gray-500 text-center">No payslips generated</div>
+        <div className="py-8 text-gray-500 text-center">
+          {loading ? "Loading..." : "No payslips generated"}
+        </div>
       ) : (
         <table className="w-full text-left">
           <thead className="bg-gray-50 border-b">

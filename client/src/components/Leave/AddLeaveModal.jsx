@@ -47,6 +47,7 @@ export default function AddLeaveModal({ employees, onClose, onSuccess }) {
       const res = await api.post("/leaves", formData);
       onSuccess(res.data.data);
       onClose();  
+      window.dispatchEvent(new Event("data-updated"));
     } catch (err) {
       setError(err.response?.data?.message || "Failed to add leave");
     } finally {

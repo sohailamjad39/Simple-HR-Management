@@ -1,6 +1,5 @@
 // client/src/pages/Logout.jsx
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 
 const Logout = () => {
   const navigate = useNavigate();
@@ -12,15 +11,8 @@ const Logout = () => {
   };
 
   const handleCancel = () => {
-    navigate(-1);
+    navigate(-1); // Go back
   };
-
-  useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (!user) {
-      navigate("/login", { replace: true });
-    }
-  }, [navigate]);
 
   return (
     <div className="z-50 fixed inset-0 flex justify-center items-center bg-black/20 backdrop-blur-sm p-4">

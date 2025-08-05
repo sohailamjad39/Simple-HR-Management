@@ -2,27 +2,84 @@
 import { useState, useEffect } from "react";
 import api from "../../services/api";
 
-export default function SalaryDetails({ employeeId }) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+const CACHE_KEY = (employeeId) => `salary_details_${employeeId}`;
 
-  useEffect(() => {
-    const fetch = async () => {
-      setLoading(true);
+export default function SalaryDetails({ employeeId }) {
+  const [data, setData] = useState(() => {
+    if (!employeeId) return null;
+    const saved = localStorage.getItem(CACHE_KEY(employeeId));
+    if (saved) {
       try {
-        const res = await api.get(`/payroll/salary/${employeeId}`);
-        setData(res.data.data);
-      } catch (err) {
-        alert("Failed to load salary details");
-      } finally {
-        setLoading(false);
+        const { data } = JSON.parse(saved);
+        return data;
+      } catch (e) {
+        console.warn("Failed to parse cached salary details", e);
       }
-    };
-    fetch();
+    }
+    return null;
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const fetchFreshData = async () => {
+    if (!employeeId) return;
+    setLoading(true);
+    try {
+      const res = await api.get(`/payroll/salary/${employeeId}`);
+      const freshData = res.data.data;
+
+      setData(freshData);
+      localStorage.setItem(
+        CACHE_KEY(employeeId),
+        JSON.stringify({ data: freshData, timestamp: Date.now() })
+      );
+    } catch (err) {
+      console.error("Failed to load salary details", err);
+      // ✅ Keep showing cached data
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Load cached data on mount, then fetch fresh
+  useEffect(() => {
+    if (!employeeId) return;
+
+    const saved = localStorage.getItem(CACHE_KEY(employeeId));
+    if (saved) {
+      try {
+        const { data } = JSON.parse(saved);
+        setData(data);
+      } catch (e) {
+        console.warn("Failed to read salary details cache", e);
+      }
+    }
+
+    // ✅ Always fetch fresh data in background
+    fetchFreshData();
   }, [employeeId]);
 
-  if (loading) return <div className="py-8 text-gray-500 text-center">Loading...</div>;
-  if (!data) return <div className="py-8 text-gray-500 text-center">No data</div>;
+  // ✅ Listen for global updates (e.g., salary config changed)
+  useEffect(() => {
+    if (!employeeId) return;
+
+    const handleRefresh = () => {
+      fetchFreshData();
+    };
+
+    window.addEventListener("data-updated", handleRefresh);
+    return () => {
+      window.removeEventListener("data-updated", handleRefresh);
+    };
+  }, [employeeId]);
+
+  if (!employeeId) {
+    return <div className="py-8 text-gray-500 text-center">Select an employee</div>;
+  }
+
+  if (!data) {
+    return <div className="py-8 text-gray-500 text-center">Loading...</div>;
+  }
 
   const { employee, current } = data;
 

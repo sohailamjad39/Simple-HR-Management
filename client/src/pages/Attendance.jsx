@@ -10,25 +10,64 @@ import DailyAttendance from "../components/Attendance/DailyAttendance";
 import MonthlyReport from "../components/Attendance/MonthlyReport";
 import AddAttendanceModal from "../components/Attendance/AddAttendanceModal";
 
+const CACHE_KEY = "attendance_cached_data";
+
 const Attendance = () => {
   const navigate = useNavigate();
 
-  // Tabs
   const [activeTab, setActiveTab] = useState("daily");
-
-  // Filters
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
-
-  // Modals
   const [showAddModal, setShowAddModal] = useState(false);
-
   const [attendance, setAttendance] = useState([]);
-
-  // Employees (for modals)
   const [employees, setEmployees] = useState([]);
 
-  // Fetch employees on mount
+  // ✅ Load cached attendance on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(CACHE_KEY);
+    if (saved) {
+      try {
+        const { data } = JSON.parse(saved);
+        setAttendance(data); // ✅ Show cached data instantly
+      } catch (e) {
+        console.warn("Failed to parse cached attendance", e);
+      }
+    }
+
+    // ✅ Always fetch fresh data in background
+    fetchFreshAttendance();
+  }, []);
+
+  // ✅ Fetch fresh data without blocking UI
+  const fetchFreshAttendance = async () => {
+    try {
+      const res = await api.get("/attendance/daily", { params: { date } });
+      const data = Array.isArray(res.data.fullAttendance) ? res.data.fullAttendance : [];
+
+      setAttendance(data);
+      localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({ data, timestamp: Date.now() })
+      );
+    } catch (err) {
+      console.error("Failed to load fresh attendance", err);
+      // ✅ Keep showing cached data if API fails
+    }
+  };
+
+  // ✅ Listen for external updates (e.g., after add/edit)
+  useEffect(() => {
+    const handleRefresh = () => {
+      fetchFreshAttendance(); // Re-fetch in background
+    };
+
+    window.addEventListener("data-updated", handleRefresh);
+    return () => {
+      window.removeEventListener("data-updated", handleRefresh);
+    };
+  }, []);
+
+  // Fetch employees
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
@@ -41,6 +80,24 @@ const Attendance = () => {
     fetchEmployees();
   }, []);
 
+  // Handle add/update
+  const handleSuccess = (newAttendance) => {
+    setAttendance((prev) => {
+      const index = prev.findIndex(
+        (a) =>
+          a.employee._id === newAttendance.employee._id &&
+          a.date === newAttendance.date
+      );
+      if (index > -1) {
+        const updated = [...prev];
+        updated[index] = newAttendance;
+        return updated;
+      }
+      return [newAttendance, ...prev];
+    });
+    setShowAddModal(false);
+  };
+
   return (
     <>
       <Navbar />
@@ -48,7 +105,6 @@ const Attendance = () => {
         <Sidebar />
 
         <div className="mx-auto p-6 pt-20 max-w-7xl">
-          {/* Page Header */}
           <div className="flex justify-between items-center mb-6">
             <h1 className="font-bold text-gray-900 text-2xl">Attendance</h1>
             <button
@@ -59,7 +115,6 @@ const Attendance = () => {
             </button>
           </div>
 
-          {/* Tabs */}
           <div className="flex mb-6 border-gray-200 border-b">
             {["daily", "monthly"].map((tab) => (
               <button
@@ -77,7 +132,6 @@ const Attendance = () => {
             ))}
           </div>
 
-          {/* Tab Content */}
           <div>
             {activeTab === "daily" && (
               <DailyAttendance
@@ -92,15 +146,11 @@ const Attendance = () => {
             )}
           </div>
 
-          {/* Add Modal */}
           {showAddModal && (
             <AddAttendanceModal
               employees={employees}
               onClose={() => setShowAddModal(false)}
-              onSuccess={(newAttendance) => {
-                setAttendance((prev) => [newAttendance, ...prev]);
-                setShowAddModal(false);
-              }}
+              onSuccess={handleSuccess}
             />
           )}
         </div>

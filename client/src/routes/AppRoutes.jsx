@@ -15,6 +15,7 @@ import LeaveManagement from "../pages/LeaveManagement";
 import Attendance from "../pages/Attendance";
 import Payroll from "../pages/Payroll";
 import Profile from "../pages/Profile";
+import Settings from "../pages/Settings";
 
 function AppRoutes() {
   return (
@@ -45,6 +46,14 @@ function AppRoutes() {
         }
       />
       
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/employees/add"

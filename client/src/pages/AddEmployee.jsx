@@ -78,9 +78,11 @@ const AddEmployee = () => {
       if (isEdit) {
         // ✅ PUT request for update
         await api.put(`/employees/${id}`, formData);
+        window.dispatchEvent(new Event("data-updated"));
       } else {
         // ✅ POST request for create
         await api.post("/employees", formData);
+        window.dispatchEvent(new Event("data-updated"));
       }
 
       navigate("/employees", { state: { saved: true } });

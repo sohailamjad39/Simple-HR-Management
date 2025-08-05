@@ -21,6 +21,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 import attendanceRoutes from "./routes/attendanceRoutes.js";
 import payrollRoutes from "./routes/payrollRoutes.js";
 import hrRoutes from "./routes/hrRoutes.js";
+import settingsRoutes from "./routes/settingsRoutes.js";
 
 // Sample Route
 app.get("/sample", (req, res) => {
@@ -35,6 +36,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/payroll", payrollRoutes);
 app.use("/api/hr", hrRoutes);
+app.use("/api/settings", settingsRoutes);
 
 // Start Server Only After Successful DB Connection
 const startServer = async () => {

@@ -2,10 +2,19 @@
 import { useState } from "react";
 import api from "../../services/api";
 
-export default function EditAttendanceModal({ attendance, employees, onClose, onSuccess }) {
+export default function EditAttendanceModal({
+  attendance,
+  employees,
+  onClose,
+  onSuccess,
+}) {
   const [formData, setFormData] = useState({
-    inTime: attendance.inTime ? new Date(attendance.inTime).toTimeString().slice(0, 5) : "",
-    outTime: attendance.outTime ? new Date(attendance.outTime).toTimeString().slice(0, 5) : "",
+    inTime: attendance.inTime
+      ? new Date(attendance.inTime).toTimeString().slice(0, 5)
+      : "",
+    outTime: attendance.outTime
+      ? new Date(attendance.outTime).toTimeString().slice(0, 5)
+      : "",
     status: attendance.status,
     isLate: attendance.isLate,
     remarks: attendance.remarks || "",
@@ -24,11 +33,12 @@ export default function EditAttendanceModal({ attendance, employees, onClose, on
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-  
+
     try {
       const res = await api.patch(`/attendance/${attendance._id}`, formData);
 
       onSuccess(res.data.attendance);
+      window.dispatchEvent(new Event("data-updated"));
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update attendance");
     } finally {
@@ -40,9 +50,12 @@ export default function EditAttendanceModal({ attendance, employees, onClose, on
     <div className="z-50 fixed inset-0 flex justify-center items-center bg-black/20 backdrop-blur-sm p-4">
       <div className="bg-white/90 shadow-2xl backdrop-blur-lg border border-black/10 rounded-3xl w-full max-w-lg overflow-hidden animate-fadeIn">
         <div className="p-6">
-          <h2 className="mb-1 font-semibold text-gray-900 text-xl">Edit Attendance</h2>
+          <h2 className="mb-1 font-semibold text-gray-900 text-xl">
+            Edit Attendance
+          </h2>
           <p className="mb-4 text-gray-600 text-sm">
-            For {attendance.employee.fullName} on {new Date(attendance.date).toLocaleDateString()}
+            For {attendance.employee.fullName} on{" "}
+            {new Date(attendance.date).toLocaleDateString()}
           </p>
 
           {error && (
@@ -55,7 +68,9 @@ export default function EditAttendanceModal({ attendance, employees, onClose, on
             {/* In/Out Time */}
             <div className="gap-4 grid grid-cols-2">
               <div>
-                <label className="block mb-1 font-medium text-gray-700 text-sm">In Time</label>
+                <label className="block mb-1 font-medium text-gray-700 text-sm">
+                  In Time
+                </label>
                 <input
                   type="time"
                   name="inTime"
@@ -65,7 +80,9 @@ export default function EditAttendanceModal({ attendance, employees, onClose, on
                 />
               </div>
               <div>
-                <label className="block mb-1 font-medium text-gray-700 text-sm">Out Time</label>
+                <label className="block mb-1 font-medium text-gray-700 text-sm">
+                  Out Time
+                </label>
                 <input
                   type="time"
                   name="outTime"
@@ -78,7 +95,9 @@ export default function EditAttendanceModal({ attendance, employees, onClose, on
 
             {/* Status */}
             <div>
-              <label className="block mb-1 font-medium text-gray-700 text-sm">Status *</label>
+              <label className="block mb-1 font-medium text-gray-700 text-sm">
+                Status *
+              </label>
               <select
                 name="status"
                 value={formData.status}
@@ -107,7 +126,9 @@ export default function EditAttendanceModal({ attendance, employees, onClose, on
 
             {/* Remarks */}
             <div>
-              <label className="block mb-1 font-medium text-gray-700 text-sm">Remarks</label>
+              <label className="block mb-1 font-medium text-gray-700 text-sm">
+                Remarks
+              </label>
               <textarea
                 name="remarks"
                 value={formData.remarks}

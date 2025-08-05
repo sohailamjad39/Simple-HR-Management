@@ -2,7 +2,12 @@
 import { useState } from "react";
 import api from "../../services/api";
 
-export default function EditLeaveModal({ leave, employees, onClose, onSuccess }) {
+export default function EditLeaveModal({
+  leave,
+  employees,
+  onClose,
+  onSuccess,
+}) {
   const [formData, setFormData] = useState({
     leaveType: leave.leaveType,
     startDate: new Date(leave.startDate).toISOString().split("T")[0],
@@ -23,22 +28,23 @@ export default function EditLeaveModal({ leave, employees, onClose, onSuccess })
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-  
+
     if (new Date(formData.endDate) < new Date(formData.startDate)) {
       setError("End date cannot be before start date");
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
       const res = await api.patch(`/leaves/${leave._id}`, formData);
       onSuccess(res.data.data);
-      onClose(); 
+      onClose();
+      setTimeout(() => {
+        window.dispatchEvent(new Event("data-updated"));
+      }, 100);
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Failed to update leave"
-      );
+      setError(err.response?.data?.message || "Failed to update leave");
     } finally {
       setLoading(false);
     }
@@ -51,7 +57,8 @@ export default function EditLeaveModal({ leave, employees, onClose, onSuccess })
         <div className="p-6 border-gray-200 border-b">
           <h2 className="font-semibold text-gray-900 text-lg">Edit Leave</h2>
           <p className="text-gray-600 text-sm">
-            Update leave for <strong>{leave.employee?.fullName || "Unknown"}</strong>
+            Update leave for{" "}
+            <strong>{leave.employee?.fullName || "Unknown"}</strong>
           </p>
         </div>
 
@@ -66,15 +73,26 @@ export default function EditLeaveModal({ leave, employees, onClose, onSuccess })
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Leave Type */}
             <div>
-              <label className="block mb-1 font-medium text-gray-700 text-xs">Leave Type *</label>
+              <label className="block mb-1 font-medium text-gray-700 text-xs">
+                Leave Type *
+              </label>
               <select
                 name="leaveType"
                 value={formData.leaveType}
                 onChange={handleChange}
                 className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full text-xs"
               >
-                {["Sick", "Casual", "Earned", "Maternity", "Paternity", "Unpaid"].map((type) => (
-                  <option key={type} value={type}>{type}</option>
+                {[
+                  "Sick",
+                  "Casual",
+                  "Earned",
+                  "Maternity",
+                  "Paternity",
+                  "Unpaid",
+                ].map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
                 ))}
               </select>
             </div>
@@ -82,7 +100,9 @@ export default function EditLeaveModal({ leave, employees, onClose, onSuccess })
             {/* Dates */}
             <div className="gap-3 grid grid-cols-2">
               <div>
-                <label className="block mb-1 font-medium text-gray-700 text-xs">Start Date *</label>
+                <label className="block mb-1 font-medium text-gray-700 text-xs">
+                  Start Date *
+                </label>
                 <input
                   type="date"
                   name="startDate"
@@ -93,7 +113,9 @@ export default function EditLeaveModal({ leave, employees, onClose, onSuccess })
                 />
               </div>
               <div>
-                <label className="block mb-1 font-medium text-gray-700 text-xs">End Date *</label>
+                <label className="block mb-1 font-medium text-gray-700 text-xs">
+                  End Date *
+                </label>
                 <input
                   type="date"
                   name="endDate"
@@ -107,7 +129,9 @@ export default function EditLeaveModal({ leave, employees, onClose, onSuccess })
 
             {/* Reason */}
             <div>
-              <label className="block mb-1 font-medium text-gray-700 text-xs">Reason *</label>
+              <label className="block mb-1 font-medium text-gray-700 text-xs">
+                Reason *
+              </label>
               <textarea
                 name="reason"
                 value={formData.reason}
@@ -121,7 +145,9 @@ export default function EditLeaveModal({ leave, employees, onClose, onSuccess })
 
             {/* Remarks */}
             <div>
-              <label className="block mb-1 font-medium text-gray-700 text-xs">Remarks</label>
+              <label className="block mb-1 font-medium text-gray-700 text-xs">
+                Remarks
+              </label>
               <textarea
                 name="remarks"
                 value={formData.remarks}
@@ -134,7 +160,9 @@ export default function EditLeaveModal({ leave, employees, onClose, onSuccess })
 
             {/* Covered By */}
             <div>
-              <label className="block mb-1 font-medium text-gray-700 text-xs">Covered By</label>
+              <label className="block mb-1 font-medium text-gray-700 text-xs">
+                Covered By
+              </label>
               <select
                 name="coveredBy"
                 value={formData.coveredBy}
@@ -143,14 +171,18 @@ export default function EditLeaveModal({ leave, employees, onClose, onSuccess })
               >
                 <option value="">Not assigned</option>
                 {employees.map((emp) => (
-                  <option key={emp._id} value={emp._id}>{emp.fullName}</option>
+                  <option key={emp._id} value={emp._id}>
+                    {emp.fullName}
+                  </option>
                 ))}
               </select>
             </div>
 
             {/* Status */}
             <div>
-              <label className="block mb-1 font-medium text-gray-700 text-xs">Status</label>
+              <label className="block mb-1 font-medium text-gray-700 text-xs">
+                Status
+              </label>
               <select
                 name="status"
                 value={formData.status}
