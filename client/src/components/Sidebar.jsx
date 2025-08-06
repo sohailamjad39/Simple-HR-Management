@@ -39,17 +39,21 @@ const Sidebar = () => {
     if (!isMobile) return;
 
     let touchStartX = 0;
+    let touchStartY = 0;
 
     const handleTouchStart = (e) => {
       touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
     };
 
     const handleTouchMove = (e) => {
       const touchX = e.touches[0].clientX;
-      const diff = touchX - touchStartX;
+      const touchY = e.touches[0].clientY;
+      const diffX = touchX - touchStartX;
+      const diffY = touchY - touchStartY;
 
-      // Swipe right to open
-      if (diff > 50 && !isOpen) {
+      // Only trigger if horizontal swipe is dominant and minimum threshold
+      if (Math.abs(diffX) > 30 && diffX > Math.abs(diffY) && diffX > 50 && !isOpen) {
         setIsOpen(true);
       }
     };
