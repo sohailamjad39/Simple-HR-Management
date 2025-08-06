@@ -40,7 +40,6 @@ This HRMS provides a centralized platform for managing core HR operations with a
 ### ⚙️ Settings
 - **Department & Designation Management**: Add, edit, delete departments and job titles.
 - **Leave Types**: Configure paid/unpaid leave types with annual limits and carry-forward rules.
-- **Attendance Rules**: Set shift start/end times, grace periods, and company holidays.
 - All settings use **instant load + background refresh** pattern.
 
 ## 🚀 User Experience
