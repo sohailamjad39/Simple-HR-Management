@@ -9,6 +9,7 @@ const menuItems = [
   { name: "Leave Management", path: "/leaves" },
   { name: "Attendance Tracking", path: "/attendance" },
   { name: "Payroll Management", path: "/payroll" },
+  { name: "About Developer", path: "/about/developer" },
 ];
 
 const Sidebar = () => {

@@ -16,10 +16,20 @@ import Attendance from "../pages/Attendance";
 import Payroll from "../pages/Payroll";
 import Profile from "../pages/Profile";
 import Settings from "../pages/Settings";
+import AboutDeveloper from "../pages/AboutDeveloper";
 
 function AppRoutes() {
   return (
+
     <Routes>
+
+      <Route
+        path="/about/developer"
+        element={
+            <AboutDeveloper />
+        }
+      />
+
       <Route
         path="/"
         element={
