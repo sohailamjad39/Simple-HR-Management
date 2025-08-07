@@ -1,6 +1,6 @@
 // client/src/pages/Login.jsx
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; 
+import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 const Login = () => {
@@ -122,8 +122,8 @@ const Login = () => {
             <div>
               <button
                 type="button"
-                className="focus:outline-none font-medium text-indigo-600 hover:text-indigo-500"
-                onClick={() => alert("Forgot password feature coming soon!")}
+                className="focus:outline-none font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer"
+                onClick={() => navigate("/forgot-password")}
               >
                 Forgot password?
               </button>

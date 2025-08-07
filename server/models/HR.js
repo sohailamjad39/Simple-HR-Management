@@ -60,6 +60,9 @@ const hrSchema = new mongoose.Schema(
       type: Map,
       of: String,
     },
+
+    resetPasswordToken: { type: String },
+    resetPasswordExpiry: { type: Date },
   },
   {
     timestamps: true,

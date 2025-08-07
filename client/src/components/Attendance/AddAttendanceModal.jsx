@@ -1,9 +1,8 @@
 // client/src/components/Attendance/AddAttendanceModal.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../../services/api";
 
-export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
-
+export default function AddAttendanceModal({ employees, onClose, onSuccess, existingAttendance }) {
   const [formData, setFormData] = useState({
     employee: "",
     date: new Date().toISOString().split("T")[0],
@@ -16,6 +15,31 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Pre-fill form if editing existing attendance
+  useEffect(() => {
+    if (existingAttendance) {
+      setFormData({
+        employee: existingAttendance.employee._id,
+        date: existingAttendance.date.split("T")[0],
+        inTime: existingAttendance.inTime ? new Date(existingAttendance.inTime).toTimeString().slice(0, 5) : "",
+        outTime: existingAttendance.outTime ? new Date(existingAttendance.outTime).toTimeString().slice(0, 5) : "",
+        status: existingAttendance.status,
+        isLate: existingAttendance.isLate,
+        remarks: existingAttendance.remarks || "",
+      });
+    } else {
+      setFormData({
+        employee: "",
+        date: new Date().toISOString().split("T")[0],
+        inTime: "",
+        outTime: "",
+        status: "Present",
+        isLate: false,
+        remarks: "",
+      });
+    }
+  }, [existingAttendance]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -36,16 +60,28 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
     setLoading(true);
 
     try {
-      const res = await api.post("/attendance/manual", formData);
-      onSuccess?.(res.data.data);
+      const payload = { ...formData };
+      let res;
+
+      if (existingAttendance?._id) {
+        // Update existing
+        res = await api.patch(`/attendance/${existingAttendance._id}`, payload);
+      } else {
+        // Create new
+        res = await api.post("/attendance/manual", payload);
+      }
+
+      onSuccess?.(res.data.attendance);
       onClose();
       window.dispatchEvent(new Event("data-updated"));
     } catch (err) {
-      console.error("Add Attendance Error:", err);
+      console.error("Attendance Error:", err);
+      const message = err.response?.data?.message || err.message;
+
       setError(
-        err.response?.data?.message ||
-        err.message ||
-        "Failed to add attendance"
+        message.includes("already exists")
+          ? "Attendance already exists and has been updated."
+          : message || "Failed to save attendance"
       );
     } finally {
       setLoading(false);
@@ -64,8 +100,14 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
     <div className="z-50 fixed inset-0 flex justify-center items-center bg-black/20 backdrop-blur-sm p-4">
       <div className="bg-white/90 shadow-2xl backdrop-blur-lg border border-black/10 rounded-3xl w-full max-w-lg overflow-hidden animate-fadeIn">
         <div className="p-6 border-gray-200 border-b">
-          <h2 className="font-semibold text-gray-900 text-lg">Add Manual Attendance</h2>
-          <p className="text-gray-600 text-sm">Record attendance for an employee</p>
+          <h2 className="font-semibold text-gray-900 text-lg">
+            {existingAttendance ? "Edit Attendance" : "Add Manual Attendance"}
+          </h2>
+          <p className="text-gray-600 text-sm">
+            {existingAttendance
+              ? "Update the attendance record"
+              : "Record attendance for an employee"}
+          </p>
         </div>
 
         <div className="p-6 max-h-96 overflow-y-auto">
@@ -91,6 +133,7 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
                 onChange={handleChange}
                 className="mt-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full text-xs"
                 required
+                disabled={existingAttendance}
               >
                 <option value="">Select Employee</option>
                 {filteredEmployees.length > 0 ? (
@@ -114,6 +157,7 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
                 onChange={handleChange}
                 className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full text-xs"
                 required
+                disabled={existingAttendance}
               />
             </div>
 
@@ -196,7 +240,10 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess }) {
             disabled={loading}
             className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-3 py-1 rounded text-white text-xs transition-colors cursor-pointer"
           >
-            {loading ? "Saving..." : "Add Attendance"}
+            {loading 
+              ? "Saving..." 
+              : existingAttendance ? "Update Attendance" : "Add Attendance"
+            }
           </button>
         </div>
       </div>

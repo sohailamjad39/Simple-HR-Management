@@ -17,18 +17,13 @@ import Payroll from "../pages/Payroll";
 import Profile from "../pages/Profile";
 import Settings from "../pages/Settings";
 import AboutDeveloper from "../pages/AboutDeveloper";
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
 
 function AppRoutes() {
   return (
-
     <Routes>
-
-      <Route
-        path="/about/developer"
-        element={
-            <AboutDeveloper />
-        }
-      />
+      <Route path="/about/developer" element={<AboutDeveloper />} />
 
       <Route
         path="/"
@@ -55,7 +50,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/settings"
         element={
@@ -95,7 +90,7 @@ function AppRoutes() {
         path="/employees/:id/edit"
         element={
           <ProtectedRoute>
-            <AddEmployee /> 
+            <AddEmployee />
           </ProtectedRoute>
         }
       />
@@ -143,6 +138,25 @@ function AppRoutes() {
           </GuestRoute>
         }
       />
+
+      <Route
+        path="/forgot-password"
+        element={
+          <GuestRoute>
+            <ForgotPassword />
+          </GuestRoute>
+        }
+      />
+
+      <Route
+        path="/reset-password/:token"
+        element={
+          <GuestRoute>
+            <ResetPassword />
+          </GuestRoute>
+        }
+      />
+
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

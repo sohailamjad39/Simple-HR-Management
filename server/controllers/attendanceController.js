@@ -110,6 +110,7 @@ export const getDailyAttendance = asyncHandler(async (req, res) => {
 export const addManualAttendance = asyncHandler(async (req, res) => {
   const { employee, date, inTime, outTime, status, isLate, remarks } = req.body;
 
+
   if (!employee || !date || !status) {
     return res.status(400).json({
       success: false,
@@ -136,9 +137,21 @@ export const addManualAttendance = asyncHandler(async (req, res) => {
   let inTimeDate, outTimeDate;
   if (inTime) {
     inTimeDate = new Date(`${date}T${inTime}`);
+    if (isNaN(inTimeDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid inTime",
+      });
+    }
   }
   if (outTime) {
     outTimeDate = new Date(`${date}T${outTime}`);
+    if (isNaN(outTimeDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid outTime",
+      });
+    }
   }
 
   if (inTimeDate && outTimeDate && outTimeDate < inTimeDate) {
@@ -148,15 +161,22 @@ export const addManualAttendance = asyncHandler(async (req, res) => {
     });
   }
 
-  let attendance = await Attendance.findOne({ employee, date: targetDate });
+  let attendance = await Attendance.findOne({
+    employee,
+    date: {
+      $gte: new Date(targetDate.setHours(0, 0, 0, 0)),
+      $lt: new Date(targetDate.setHours(24, 0, 0, 0)),
+    },
+  });
 
   if (attendance) {
     // Update
     attendance.inTime = inTimeDate || attendance.inTime;
     attendance.outTime = outTimeDate || attendance.outTime;
     attendance.status = status;
-    attendance.isLate = isLate || false;
+    attendance.isLate = Boolean(isLate);
     attendance.remarks = remarks || attendance.remarks;
+    await attendance.save();
   } else {
     // Create
     attendance = await Attendance.create({
@@ -165,7 +185,7 @@ export const addManualAttendance = asyncHandler(async (req, res) => {
       inTime: inTimeDate,
       outTime: outTimeDate,
       status,
-      isLate: isLate || false,
+      isLate: Boolean(isLate),
       remarks,
       recordedBy: req.user._id,
     });
@@ -174,9 +194,9 @@ export const addManualAttendance = asyncHandler(async (req, res) => {
   await attendance.populate("employee", "fullName employeeId");
   await attendance.populate("recordedBy", "fullName");
 
-  res.status(201).json({
+  res.status(200).json({
     success: true,
-    attendance,
+    data: attendance,
   });
 });
 
@@ -254,14 +274,6 @@ export const updateAttendance = asyncHandler(async (req, res) => {
     });
   }
 
-  // Only HR who recorded can update
-  if (attendance.recordedBy.toString() !== req.user._id.toString()) {
-    return res.status(403).json({
-      success: false,
-      message: "Not authorized",
-    });
-  }
-
   // Update fields
   if (inTime)
     attendance.inTime = new Date(
@@ -301,16 +313,10 @@ export const deleteAttendance = asyncHandler(async (req, res) => {
     });
   }
 
-  if (attendance.recordedBy.toString() !== req.user._id.toString()) {
-    return res.status(403).json({
-      success: false,
-      message: "Not authorized",
-    });
-  }
-
   await Attendance.deleteOne({ _id: id });
   res.json({
     success: true,
     message: "Attendance deleted successfully",
   });
 });
+

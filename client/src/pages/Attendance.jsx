@@ -49,12 +49,11 @@ const Attendance = () => {
             <h1 className="font-bold text-gray-900 text-2xl">Attendance</h1>
             <button
               onClick={() => {
-                console.log("Add button clicked"); // ✅ Debug
                 setShowAddModal(true);
               }}
-              className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-medium text-white transition-colors"
-            >
-              + Add Manual
+              className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-medium text-white transition-colors cursor-pointer"
+            > 
+              + Mark Attendance
             </button>
           </div>
 
@@ -84,12 +83,10 @@ const Attendance = () => {
             )}
           </div>
 
-          {/* ✅ Render Modal */}
           {showAddModal && (
             <AddAttendanceModal
               employees={employees}
               onClose={() => {
-                console.log("Modal closed");
                 setShowAddModal(false);
               }}
               onSuccess={handleSuccess}

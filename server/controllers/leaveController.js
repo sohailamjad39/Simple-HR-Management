@@ -12,7 +12,7 @@ export const getLeaves = asyncHandler(async (req, res) => {
   const { search, employee, leaveType, status, startDate, endDate } = req.query;
 
   // Build query: only HR's own leaves
-  let query = { createdBy: req.user._id };
+  let query = {};
 
   // Search by employee name, email, or ID
   if (search) {
@@ -63,6 +63,7 @@ export const createLeave = asyncHandler(async (req, res) => {
     reason,
     remarks,
     coveredBy,
+    status,  
   } = req.body;
 
   // Validate required fields
@@ -90,6 +91,9 @@ export const createLeave = asyncHandler(async (req, res) => {
     throw new Error("End date cannot be before start date");
   }
 
+  const validStatuses = ["Pending", "Approved", "Rejected", "Cancelled"];
+  const finalStatus = validStatuses.includes(status) ? status : "Pending";
+
   // Create leave
   const leave = await Leave.create({
     employee,
@@ -100,7 +104,8 @@ export const createLeave = asyncHandler(async (req, res) => {
     remarks: remarks || undefined,
     coveredBy: coveredBy || undefined,
     createdBy: req.user._id,
-    status: "Pending", // HR can update later
+    status: finalStatus, 
+    ...(finalStatus === "Approved" && { approvedBy: req.user._id }), 
   });
 
   const populatedLeave = await Leave.findById(leave._id)
