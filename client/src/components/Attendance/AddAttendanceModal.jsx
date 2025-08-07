@@ -19,9 +19,11 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess, exis
   // Pre-fill form if editing existing attendance
   useEffect(() => {
     if (existingAttendance) {
+      // Extract local date string (YYYY-MM-DD)
+      const localDate = existingAttendance.date.split("T")[0];
       setFormData({
         employee: existingAttendance.employee._id,
-        date: existingAttendance.date.split("T")[0],
+        date: localDate,
         inTime: existingAttendance.inTime ? new Date(existingAttendance.inTime).toTimeString().slice(0, 5) : "",
         outTime: existingAttendance.outTime ? new Date(existingAttendance.outTime).toTimeString().slice(0, 5) : "",
         status: existingAttendance.status,
@@ -60,7 +62,11 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess, exis
     setLoading(true);
 
     try {
-      const payload = { ...formData };
+      const payload = {
+        ...formData,
+        date: formData.date,
+      };
+
       let res;
 
       if (existingAttendance?._id) {
@@ -72,6 +78,8 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess, exis
       }
 
       onSuccess?.(res.data.attendance);
+      onClose();
+      window.dispatchEvent(new Event("data-updated"));
     } catch (err) {
       console.error("Attendance Error:", err);
       const message = err.response?.data?.message || err.message;
