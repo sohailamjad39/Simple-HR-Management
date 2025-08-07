@@ -23,7 +23,7 @@ const hrSchema = new mongoose.Schema(
       required: [true, "Phone number is required"],
       unique: true,
       trim: true,
-      match: [/^[\+]?[1-9]\d{1,14}$/, "Please enter a valid phone number"],
+      match: [/^(?:\+[\d]{1,4}\d{10}|0\d{10})$/, "Please enter a valid phone number"],
     },
     password: {
       type: String,

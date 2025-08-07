@@ -33,8 +33,7 @@ const registerHR = async (req, res, next) => {
         // Too many attempts
         return res.status(429).json({
           success: false,
-          message:
-            "You have reached the registration limit. Please try again after 24 hours.",
+          message: "You have reached the registration limit. Please try again after 24 hours.",
         });
       } else {
         // Increment counter
@@ -47,11 +46,37 @@ const registerHR = async (req, res, next) => {
       // First request from this IP
       registrationAttempts.set(ip, { count: 1, firstRequest: now });
     }
+
     // Validation
     if (!fullName || !email || !phone || !password) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid email address",
+      });
+    }
+
+    // Validate phone (basic)
+    if (phone.length < 10) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number is too short",
+      });
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters",
       });
     }
 
@@ -101,7 +126,36 @@ const registerHR = async (req, res, next) => {
       },
     });
   } catch (error) {
-    next(error);
+    // ✅ Handle common errors gracefully
+    console.error("Registration Error:", error); // Log for debugging
+
+    // Handle Mongoose validation errors
+    if (error.name === "ValidationError") {
+      const firstError = Object.values(error.errors)[0];
+      return res.status(400).json({
+        success: false,
+        message: firstError?.message || "Invalid input provided",
+      });
+    }
+
+    // Handle MongoDB duplicate key error (fallback)
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyValue)[0];
+      return res.status(400).json({
+        success: false,
+        message: field === "email"
+          ? "Email already in use"
+          : field === "phone"
+          ? "Phone number already in use"
+          : "This data is already taken",
+      });
+    }
+
+    // Handle any other error
+    res.status(500).json({
+      success: false,
+      message: "Registration failed. Please try again.",
+    });
   }
 };
 
