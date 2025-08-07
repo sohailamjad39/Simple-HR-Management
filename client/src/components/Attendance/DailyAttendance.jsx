@@ -53,7 +53,6 @@ export default function DailyAttendance({ date, setDate, onSuccess }) {
 
       setAttendance(data);
 
-      // Always save fresh data to cache
       try {
         localStorage.setItem(
           CACHE_KEY,
@@ -79,7 +78,6 @@ export default function DailyAttendance({ date, setDate, onSuccess }) {
         const parsed = JSON.parse(saved);
         const { data, date: cachedDate, filters: cachedFilters } = parsed;
 
-        // Only use cache if same date and filters
         if (
           cachedDate === date &&
           JSON.stringify(cachedFilters) === JSON.stringify(filters) &&
@@ -90,7 +88,6 @@ export default function DailyAttendance({ date, setDate, onSuccess }) {
       }
     } catch (e) {
       console.warn("Failed to parse cached attendance", e);
-      // Ignore corrupted cache
     }
 
     fetchFreshData();
@@ -108,6 +105,11 @@ export default function DailyAttendance({ date, setDate, onSuccess }) {
   }, [date, filters]);
 
   const handleDelete = async (id) => {
+    if (!id) {
+      alert("No attendance record to delete");
+      return;
+    }
+
     try {
       await api.delete(`/attendance/${id}`);
       setAttendance((prev) => prev.filter((att) => att._id !== id));

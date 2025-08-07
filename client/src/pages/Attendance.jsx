@@ -19,7 +19,7 @@ const Attendance = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [employees, setEmployees] = useState([]);
 
-  // ✅ Fetch employees
+  // Fetch employees
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
@@ -32,8 +32,9 @@ const Attendance = () => {
     fetchEmployees();
   }, []);
 
-  // ✅ Handle success
-  const handleSuccess = (newAttendance) => {
+  const handleSuccess = async (newAttendance) => {
+    // Artificial 1-second delay for smooth UX
+    await new Promise(resolve => setTimeout(resolve, 100));
     window.dispatchEvent(new Event("data-updated"));
     setShowAddModal(false);
   };
@@ -48,11 +49,9 @@ const Attendance = () => {
           <div className="flex justify-between items-center mb-6">
             <h1 className="font-bold text-gray-900 text-2xl">Attendance</h1>
             <button
-              onClick={() => {
-                setShowAddModal(true);
-              }}
+              onClick={() => setShowAddModal(true)}
               className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-medium text-white transition-colors cursor-pointer"
-            > 
+            >
               + Mark Attendance
             </button>
           </div>
@@ -76,19 +75,22 @@ const Attendance = () => {
 
           <div>
             {activeTab === "daily" && (
-              <DailyAttendance date={date} setDate={setDate} />
+              <DailyAttendance
+                date={date}
+                setDate={setDate}
+                onSuccess={handleSuccess}
+              />
             )}
             {activeTab === "monthly" && (
               <MonthlyReport month={month} setMonth={setMonth} />
             )}
           </div>
 
+          {/* Add Modal */}
           {showAddModal && (
             <AddAttendanceModal
               employees={employees}
-              onClose={() => {
-                setShowAddModal(false);
-              }}
+              onClose={() => setShowAddModal(false)}
               onSuccess={handleSuccess}
             />
           )}

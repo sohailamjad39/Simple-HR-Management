@@ -110,7 +110,6 @@ export const getDailyAttendance = asyncHandler(async (req, res) => {
 export const addManualAttendance = asyncHandler(async (req, res) => {
   const { employee, date, inTime, outTime, status, isLate, remarks } = req.body;
 
-
   if (!employee || !date || !status) {
     return res.status(400).json({
       success: false,
@@ -194,9 +193,10 @@ export const addManualAttendance = asyncHandler(async (req, res) => {
   await attendance.populate("employee", "fullName employeeId");
   await attendance.populate("recordedBy", "fullName");
 
+  // ✅ Fix: Return under `attendance`, not `data.attendance`
   res.status(200).json({
     success: true,
-    data: {attendance},
+    attendance, // ← This fixes the frontend issue
   });
 });
 
@@ -319,4 +319,3 @@ export const deleteAttendance = asyncHandler(async (req, res) => {
     message: "Attendance deleted successfully",
   });
 });
-

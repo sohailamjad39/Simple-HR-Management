@@ -71,18 +71,11 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess, exis
         res = await api.post("/attendance/manual", payload);
       }
 
-      onSuccess?.(res.data.data.attendance);
-      onClose();
-      window.dispatchEvent(new Event("data-updated"));
+      onSuccess?.(res.data.attendance);
     } catch (err) {
       console.error("Attendance Error:", err);
       const message = err.response?.data?.message || err.message;
-
-      setError(
-        message.includes("already exists")
-          ? "Attendance already exists and has been updated."
-          : message || "Failed to save attendance"
-      );
+      setError(message || "Failed to save attendance");
     } finally {
       setLoading(false);
     }
@@ -240,10 +233,7 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess, exis
             disabled={loading}
             className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 px-3 py-1 rounded text-white text-xs transition-colors cursor-pointer"
           >
-            {loading 
-              ? "Saving..." 
-              : existingAttendance ? "Update Attendance" : "Add Attendance"
-            }
+            {loading ? "Saving..." : existingAttendance ? "Update Attendance" : "Add Attendance"}
           </button>
         </div>
       </div>
