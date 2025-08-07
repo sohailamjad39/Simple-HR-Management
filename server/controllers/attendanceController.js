@@ -107,6 +107,7 @@ export const getDailyAttendance = asyncHandler(async (req, res) => {
  * @route   POST /api/attendance/manual
  * @access  Private
  */
+// server/controllers/attendanceController.js
 export const addManualAttendance = asyncHandler(async (req, res) => {
   const { employee, date, inTime, outTime, status, isLate, remarks } = req.body;
 
@@ -125,6 +126,11 @@ export const addManualAttendance = asyncHandler(async (req, res) => {
     });
   }
 
+  const year = targetDate.getFullYear();
+  const month = targetDate.getMonth();
+  const day = targetDate.getDate();
+  const localTargetDate = new Date(year, month, day); 
+
   const emp = await Employee.findById(employee);
   if (!emp) {
     return res.status(404).json({
@@ -135,7 +141,8 @@ export const addManualAttendance = asyncHandler(async (req, res) => {
 
   let inTimeDate, outTimeDate;
   if (inTime) {
-    inTimeDate = new Date(`${date}T${inTime}`);
+    const [hours, minutes] = inTime.split(":");
+    inTimeDate = new Date(year, month, day, parseInt(hours, 10), parseInt(minutes, 10));
     if (isNaN(inTimeDate.getTime())) {
       return res.status(400).json({
         success: false,
@@ -144,7 +151,8 @@ export const addManualAttendance = asyncHandler(async (req, res) => {
     }
   }
   if (outTime) {
-    outTimeDate = new Date(`${date}T${outTime}`);
+    const [hours, minutes] = outTime.split(":");
+    outTimeDate = new Date(year, month, day, parseInt(hours, 10), parseInt(minutes, 10));
     if (isNaN(outTimeDate.getTime())) {
       return res.status(400).json({
         success: false,
@@ -163,8 +171,8 @@ export const addManualAttendance = asyncHandler(async (req, res) => {
   let attendance = await Attendance.findOne({
     employee,
     date: {
-      $gte: new Date(targetDate.setHours(0, 0, 0, 0)),
-      $lt: new Date(targetDate.setHours(24, 0, 0, 0)),
+      $gte: new Date(year, month, day, 0, 0, 0, 0),
+      $lt: new Date(year, month, day, 24, 0, 0, 0),
     },
   });
 
@@ -180,7 +188,7 @@ export const addManualAttendance = asyncHandler(async (req, res) => {
     // Create
     attendance = await Attendance.create({
       employee,
-      date: targetDate,
+      date: localTargetDate,
       inTime: inTimeDate,
       outTime: outTimeDate,
       status,
@@ -193,10 +201,9 @@ export const addManualAttendance = asyncHandler(async (req, res) => {
   await attendance.populate("employee", "fullName employeeId");
   await attendance.populate("recordedBy", "fullName");
 
-  // ✅ Fix: Return under `attendance`, not `data.attendance`
   res.status(200).json({
     success: true,
-    attendance, // ← This fixes the frontend issue
+    attendance, 
   });
 });
 
