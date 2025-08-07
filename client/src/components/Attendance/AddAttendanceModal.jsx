@@ -71,7 +71,7 @@ export default function AddAttendanceModal({ employees, onClose, onSuccess, exis
         res = await api.post("/attendance/manual", payload);
       }
 
-      onSuccess?.(res.data.attendance);
+      onSuccess?.(res.data.data.attendance);
       onClose();
       window.dispatchEvent(new Event("data-updated"));
     } catch (err) {

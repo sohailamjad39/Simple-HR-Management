@@ -196,7 +196,7 @@ export const addManualAttendance = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    data: attendance,
+    data: {attendance},
   });
 });
 

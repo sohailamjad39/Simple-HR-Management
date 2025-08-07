@@ -23,25 +23,7 @@ const clearCacheIfNewDay = () => {
 };
 
 export default function DailyAttendance({ date, setDate, onSuccess }) {
-  const [attendance, setAttendance] = useState(() => {
-    clearCacheIfNewDay();
-
-    const saved = localStorage.getItem(CACHE_KEY);
-    if (saved) {
-      try {
-        const { data, date: cachedDate, filters: cachedFilters } = JSON.parse(saved);
-
-        // Only use cache if same date and filters
-        if (cachedDate === date && JSON.stringify(cachedFilters) === JSON.stringify(filters)) {
-          return Array.isArray(data) ? data : [];
-        }
-      } catch (e) {
-        console.warn("Failed to parse cached attendance", e);
-      }
-    }
-    return [];
-  });
-
+  const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -70,38 +52,49 @@ export default function DailyAttendance({ date, setDate, onSuccess }) {
       const data = Array.isArray(res.data.fullAttendance) ? res.data.fullAttendance : [];
 
       setAttendance(data);
-      localStorage.setItem(
-        CACHE_KEY,
-        JSON.stringify({ data, date, filters, timestamp: Date.now() })
-      );
-      onSuccess?.(data);
+
+      // Always save fresh data to cache
+      try {
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({ data, date, filters, timestamp: Date.now() })
+        );
+      } catch (e) {
+        console.warn("Failed to save to cache", e);
+      }
     } catch (err) {
       console.error("Attendance fetch error:", err);
-      // Keep showing cached data
     } finally {
       setLoading(false);
     }
   };
 
+  // Load from cache on mount
   useEffect(() => {
     clearCacheIfNewDay();
-  }, []);
 
-  useEffect(() => {
-    const saved = localStorage.getItem(CACHE_KEY);
-    if (saved) {
-      try {
-        const { data, date: cachedDate, filters: cachedFilters } = JSON.parse(saved);
-        if (cachedDate === date && JSON.stringify(cachedFilters) === JSON.stringify(filters)) {
+    try {
+      const saved = localStorage.getItem(CACHE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const { data, date: cachedDate, filters: cachedFilters } = parsed;
+
+        // Only use cache if same date and filters
+        if (
+          cachedDate === date &&
+          JSON.stringify(cachedFilters) === JSON.stringify(filters) &&
+          Array.isArray(data)
+        ) {
           setAttendance(data);
         }
-      } catch (e) {
-        console.warn("Failed to read cache", e);
       }
+    } catch (e) {
+      console.warn("Failed to parse cached attendance", e);
+      // Ignore corrupted cache
     }
 
     fetchFreshData();
-  }, [date, filters, onSuccess]);
+  }, [date, filters]);
 
   useEffect(() => {
     const handleRefresh = () => {
