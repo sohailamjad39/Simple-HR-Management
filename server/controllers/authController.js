@@ -10,10 +10,43 @@ import nodemailer from "nodemailer";
  * @route   POST /api/auth/register
  * @access  Public
  */
+
+const registrationAttempts = new Map();
+
 const registerHR = async (req, res, next) => {
   const { fullName, email, phone, password, department, role } = req.body;
+  const ip = req.ip || req.socket.remoteAddress;
 
   try {
+    // === Rate Limiting: Max 3 registrations per IP in 24 hours ===
+    const now = Date.now();
+    const windowMs = 24 * 60 * 60 * 1000; // 24 hours
+
+    const record = registrationAttempts.get(ip);
+    if (record) {
+      const timeSinceFirst = now - record.firstRequest;
+
+      if (timeSinceFirst > windowMs) {
+        // Window expired, reset counter
+        registrationAttempts.set(ip, { count: 1, firstRequest: now });
+      } else if (record.count >= 3) {
+        // Too many attempts
+        return res.status(429).json({
+          success: false,
+          message:
+            "You have reached the registration limit. Please try again after 24 hours.",
+        });
+      } else {
+        // Increment counter
+        registrationAttempts.set(ip, {
+          count: record.count + 1,
+          firstRequest: record.firstRequest,
+        });
+      }
+    } else {
+      // First request from this IP
+      registrationAttempts.set(ip, { count: 1, firstRequest: now });
+    }
     // Validation
     if (!fullName || !email || !phone || !password) {
       return res.status(400).json({
@@ -156,7 +189,7 @@ const getMe = async (req, res, next) => {
   }
 };
 
-const passwordResetAttempts = new Map(); 
+const passwordResetAttempts = new Map();
 
 /**
  * @desc    Send password reset email
@@ -324,7 +357,7 @@ const forgotPassword = async (req, res, next) => {
             <!-- Content -->
             <div class="content">
               <h2>Password Reset</h2>
-              <p>Hello ${hr.fullName.split(' ')[0]},</p>
+              <p>Hello ${hr.fullName.split(" ")[0]},</p>
               <p>You recently requested to reset your password. Click the button below to set a new one.</p>
     
               <a href="${resetUrl}" class="btn">Reset Password</a>
@@ -409,7 +442,8 @@ const resetPassword = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Password reset successful. You can now log in with your new password.",
+      message:
+        "Password reset successful. You can now log in with your new password.",
     });
   } catch (error) {
     next(error);
